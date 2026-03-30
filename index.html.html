@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TAM DELIVERY MANAGEMENT SYSTEM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; transition: 0.3s; }
+        .nav-header { background: #002f6c; color: white; padding: 15px; }
+        .section-card { background: white; border-radius: 12px; padding: 20px; height: 82vh; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        
+        .pending-row { border-left: 6px solid #ffc107; margin-bottom: 12px; transition: 0.3s; border-radius: 8px; cursor: pointer; background: #fffdf5; }
+        .pending-row:hover { background: #fff4d1; transform: scale(1.01); }
+        
+        .progress-row { border-left: 6px solid #1e8e3e !important; background: #f6fff8 !important; margin-bottom: 12px; transition: 0.3s; border-radius: 8px; cursor: pointer; }
+        .progress-row:hover { background: #e8f5e9 !important; transform: scale(1.01); }
+
+        .cutoff-text { color: #d32f2f; font-weight: bold; font-size: 0.9rem; }
+        .facility-tag { background: #e8f0fe; color: #1967d2; padding: 3px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; display: inline-block; margin-bottom: 5px; border: 1px solid #c2d7ff; }
+        .status-badge { font-size: 0.75rem; padding: 3px 10px; border-radius: 6px; font-weight: bold; margin-right: 5px; border: 1px solid transparent; }
+        
+        .bg-pending { background-color: #fce8e6; color: #d93025; border-color: #f1998e; }
+        .bg-progress { background-color: #e6f4ea; color: #1e8e3e; border-color: #81c995; }
+        
+        #activity-feed { height: 430px; overflow-y: auto; background: #1a1a1a; border-radius: 8px; padding: 10px; border: 1px solid #333; }
+        .feed-item { background: #262626; color: #39ff14; font-family: 'Consolas', monospace; padding: 12px; margin-bottom: 10px; border-left: 4px solid #39ff14; font-size: 0.8rem; }
+        .data-label { color: #70757a; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 2px; display: block;}
+
+        /* Fix overlaps and long text in loaded items table */
+        #completeReportModal .table {
+            table-layout: fixed !important;
+            width: 100% !important;
+        }
+
+        #completeReportModal table th,
+        #completeReportModal table td {
+            word-break: break-word;
+            white-space: normal;
+            overflow-wrap: break-word;
+            line-height: 1.2;
+            vertical-align: top;
+            border: 1px solid #d0d0d0;
+            padding: 8px;
+            font-size: 0.78rem;
+        }
+
+        #completeReportModal table th { font-size: 0.82rem; }
+
+        #completeReportModal table th:nth-child(1) { width: 20%; }
+        #completeReportModal table th:nth-child(2),
+        #completeReportModal table th:nth-child(3) { width: 12%; }
+        #completeReportModal table th:nth-child(4) { width: 38%; }
+        #completeReportModal table th:nth-child(5) { width: 15%; }
+
+        .timer-badge { background: #dc3545; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.65rem; font-weight: bold; animation: pulse-red 2s infinite; }
+        @keyframes pulse-red { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+        #refresh-icon {
+            display: inline-block;
+        }
+        #refresh-icon.refresh-spin {
+            animation: refresh-spin 0.6s ease-in-out;
+        }
+        @keyframes refresh-spin {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .glow { box-shadow: 0 0 20px rgba(255, 193, 7, 0.8), 0 0 40px rgba(255, 193, 7, 0.4); animation: glow-pulse 2s infinite; }
+        @keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 20px rgba(255, 193, 7, 0.8), 0 0 40px rgba(255, 193, 7, 0.4); } 50% { box-shadow: 0 0 30px rgba(255, 193, 7, 1), 0 0 60px rgba(255, 193, 7, 0.6); } }
+
+        /* DARK MODE - COMPREHENSIVE THEME */
+        body.dark-mode { 
+            background-color: #1a1a1a !important; 
+            color: #d0d0d0 !important; 
+        }
+        
+        .dark-mode .nav-header { 
+            background: #0f1f2e !important; 
+            border-bottom: 1px solid #2a3f52 !important;
+        }
+        
+        .dark-mode .section-card { 
+            background-color: #202840 !important; 
+            color: #d0d0d0 !important; 
+            border: 1px solid #2a3f52 !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
+        }
+        
+        .dark-mode .modal-content { 
+            background-color: #202840 !important; 
+            color: #d0d0d0 !important; 
+            border: 1px solid #2a3f52 !important;
+        }
+        
+        .dark-mode .modal-header { 
+            background-color: #0f1f2e !important; 
+            border-bottom: 1px solid #2a3f52 !important;
+        }
+        
+        .dark-mode .pending-row { 
+            background-color: #252d3a !important;
+            border-color: #5a6c7d !important;
+        }
+        
+        .dark-mode .progress-row { 
+            background-color: #1f3a2a !important;
+            border-color: #2e7d5e !important;
+        }
+        
+        .dark-mode .text-dark, 
+        .dark-mode h5, 
+        .dark-mode h6, 
+        .dark-mode .data-value { 
+            color: #d0d0d0 !important; 
+        }
+        
+        .dark-mode .data-label { 
+            color: #9fa5ad !important; 
+        }
+        
+        .dark-mode .text-muted { 
+            color: #8a96a3 !important; 
+        }
+        
+        .dark-mode .table { 
+            color: #d0d0d0 !important; 
+            border-color: #2a3f52 !important;
+        }
+        
+        .dark-mode .table thead th { 
+            background-color: #0f1f2e !important; 
+            color: #9fa5ad !important; 
+            border-color: #2a3f52 !important;
+        }
+        
+        .dark-mode .table-light { 
+            background-color: #0f1f2e !important; 
+            color: #d0d0d0 !important; 
+        }
+        
+        .dark-mode .form-control, 
+        .dark-mode .form-select { 
+            background-color: #252d3a !important; 
+            border-color: #3a4a62 !important; 
+            color: #d0d0d0 !important;
+        }
+        
+        .dark-mode .form-control::placeholder { 
+            color: #8a96a3 !important; 
+        }
+        
+        .dark-mode .btn-outline-secondary { 
+            color: #9fa5ad !important; 
+            border-color: #3a4a62 !important;
+        }
+        
+        .dark-mode .btn-outline-secondary:hover { 
+            background-color: #2a3f52 !important; 
+            border-color: #4a5a72 !important;
+        }
+        
+        .dark-mode .badge { 
+            background-color: #2a3f52 !important; 
+            color: #d0d0d0 !important;
+        }
+        
+        .dark-mode .badge.bg-light { 
+            background-color: #252d3a !important; 
+            color: #d0d0d0 !important; 
+            border-color: #3a4a62 !important;
+        }
+        
+        .dark-mode .badge.bg-danger { 
+            background-color: #6b2828 !important; 
+        }
+        
+        .dark-mode .badge.bg-success { 
+            background-color: #245f3f !important; 
+        }
+        
+        .dark-mode .bg-light { 
+            background-color: #252d3a !important; 
+            color: #d0d0d0 !important;
+        }
+        
+        .dark-mode .border { 
+            border-color: #2a3f52 !important; 
+        }
+        
+        .dark-mode .facility-tag { 
+            background: #1f3a4a !important; 
+            color: #6db5d9 !important; 
+            border-color: #3a5a72 !important;
+        }
+        
+        .dark-mode .status-badge { 
+            background-color: #252d3a !important; 
+            color: #9fa5ad !important; 
+            border-color: #3a4a62 !important;
+        }
+        
+        .dark-mode .bg-pending { 
+            background-color: #3a2828 !important; 
+            color: #d9a5a2 !important; 
+            border-color: #5a4a48 !important;
+        }
+        
+        .dark-mode .bg-progress { 
+            background-color: #283a30 !important; 
+            color: #a2c9b5 !important; 
+            border-color: #4a6a5f !important;
+        }
+        
+        .dark-mode #activity-feed { 
+            background: #151515 !important; 
+            border-color: #2a3f52 !important;
+        }
+        
+        .dark-mode .feed-item { 
+            background: #252d3a !important; 
+            color: #d0d0d0 !important; 
+            border-color: #3a4a62 !important;
+        }
+        
+        .dark-mode .text-primary { 
+            color: #6db5d9 !important; 
+        }
+        
+        .dark-mode .text-success { 
+            color: #5ed94a !important; 
+        }
+        
+        .dark-mode .bg-primary { 
+            background-color: #0f3a5a !important; 
+        }
+        
+        .dark-mode .btn-primary { 
+            background-color: #0f3a5a !important; 
+            border-color: #1f5a7a !important;
+        }
+        
+        .dark-mode .btn-primary:hover { 
+            background-color: #1a4a6a !important; 
+            border-color: #2a6a8a !important;
+        }
+        
+        .dark-mode .btn-success { 
+            background-color: #245f3f !important; 
+            border-color: #3a7a5f !important;
+        }
+        
+        .dark-mode .btn-info { 
+            background-color: #0f3a5a !important; 
+            border-color: #1f5a7a !important;
+        }
+        
+        .dark-mode .btn-light { 
+            background-color: #252d3a !important; 
+            color: #d0d0d0 !important; 
+            border-color: #3a4a62 !important;
+        }
+        
+        .dark-mode .btn-light:hover { 
+            background-color: #2a3f52 !important; 
+            color: #d0d0d0 !important;
+        }
+        
+        .dark-mode .btn-dark { 
+            background-color: #0a0f14 !important; 
+            border-color: #2a3f52 !important;
+        }
+        
+        .dark-mode .spinner-border { 
+            border-color: #3a4a62 !important; 
+            border-right-color: #6db5d9 !important;
+        }
+        
+        .dark-mode hr { 
+            border-color: #2a3f52 !important; 
+            opacity: 0.5;
+        }
+
+        /* FOOTER STYLING */
+        footer { 
+            background: #1a3a52; 
+            color: white; 
+            padding: 20px; 
+            text-align: center; 
+            margin-top: 30px; 
+            border-top: 1px solid #3a5a72;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            font-size: 0.85rem;
+        }
+        .dark-mode footer { 
+            background: #0f1f2e; 
+            border-top-color: #2a3f52; 
+        }
+
+        /* MODAL WINDOWS - PROFESSIONAL STYLING */
+        .modal-content { 
+            background-color: #ffffff !important; 
+            color: #333 !important; 
+            border: 1px solid #d0d0d0 !important;
+            border-radius: 6px;
+        }
+        
+        .modal-header { 
+            background-color: #f5f5f5 !important; 
+            border-color: #e0e0e0 !important;
+            border-radius: 6px 6px 0 0;
+        }
+        
+        .modal-title {
+            color: #1a3a52 !important;
+            font-weight: 600;
+        }
+        
+        .form-control,
+        .form-select { 
+            background-color: #ffffff !important; 
+            border-color: #d0d0d0 !important; 
+            color: #333 !important;
+        .dark-mode #newOrderModal .modal-header,
+        .dark-mode #completeShipmentsModal .modal-header,
+        .dark-mode #completeReportModal .modal-header,
+        .dark-mode #itemModal .modal-header { 
+            background-color: #f8f9fa !important; 
+            border-color: #e0e0e0 !important;
+        }
+        
+        .dark-mode #newOrderModal .form-control,
+        .dark-mode #completeShipmentsModal .form-control,
+        .dark-mode #completeReportModal .form-control,
+        .dark-mode #itemModal .form-control,
+        .dark-mode #newOrderModal .form-select,
+        .dark-mode #completeShipmentsModal .form-select,
+        .dark-mode #completeReportModal .form-select,
+        .dark-mode #itemModal .form-select { 
+            background-color: #ffffff !important; 
+            border-color: #ddd !important; 
+            color: #1a1a1a !important;
+        }
+        
+        .dark-mode #newOrderModal .table,
+        .dark-mode #completeShipmentsModal .table,
+        .dark-mode #completeReportModal .table,
+        .dark-mode #itemModal .table { 
+            color: #1a1a1a !important;
+        }
+        
+        .dark-mode #newOrderModal .table thead,
+        .dark-mode #completeShipmentsModal .table thead,
+        .dark-mode #completeReportModal .table thead,
+        .dark-mode #itemModal .table thead { 
+            background-color: #f8f9fa !important;
+            color: #1a1a1a !important;
+        }
+        
+        .dark-mode #newOrderModal .bg-light,
+        .dark-mode #completeShipmentsModal .bg-light,
+        .dark-mode #completeReportModal .bg-light,
+        .dark-mode #itemModal .bg-light { 
+            background-color: #f8f9fa !important; 
+            color: #1a1a1a !important;
+        }
+        
+        .dark-mode #newOrderModal .text-muted,
+        .dark-mode #completeShipmentsModal .text-muted,
+        .dark-mode #completeReportModal .text-muted,
+        .dark-mode #itemModal .text-muted { 
+            color: #6c757d !important;
+        }
+        
+        .dark-mode #newOrderModal .data-label,
+        .dark-mode #completeShipmentsModal .data-label,
+        .dark-mode #completeReportModal .data-label,
+        .dark-mode #itemModal .data-label { 
+            color: #666 !important;
+        }
+        
+        .dark-mode #newOrderModal .badge.bg-light,
+        .dark-mode #completeShipmentsModal .badge.bg-light,
+        .dark-mode #completeReportModal .badge.bg-light,
+        .dark-mode #itemModal .badge.bg-light { 
+            background-color: #f0f0f0 !important; 
+            color: #1a1a1a !important;
+            border-color: #ddd !important;
+        }
+    </style>
+</head>
+<body class="light-mode">
+<div class="nav-header shadow-sm mb-3">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">🚛 TAM DELIVERY MANAGEMENT SYSTEM</h4>
+        <div class="d-flex align-items-center">
+            <input type="text" id="search-input" class="form-control me-3" style="border-radius:20px; width:250px;" placeholder="Search RO, Vendor..." onkeyup="filterData()">
+            <button onclick="openNewOrderModal()" class="btn btn-warning btn-sm fw-bold shadow-sm me-2">➕ New Order</button>
+            <button onclick="openCompleteShipmentsModal()" class="btn btn-info btn-sm fw-bold shadow-sm me-2">✅ Complete</button>
+            <button onclick="exportToExcel()" class="btn btn-success btn-sm fw-bold shadow-sm me-2">📊 Export Excel</button>
+            <button id="refresh-btn" onclick="refreshAll()" class="btn btn-light btn-sm fw-bold shadow-sm me-2"><span id="refresh-icon" class="me-1">🔄</span>Refresh</button>
+            <button id="theme-btn" onclick="toggleDarkMode()" class="btn btn-dark btn-sm fw-bold">🌙 Theme</button>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="section-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="text-primary mb-0 fw-bold">⚠️ Active Deliveries</h5>
+                    <div class="d-flex align-items-center">
+                        <small id="last-updated" class="text-muted me-2" style="font-size: 0.7rem;">Last updated: Never</small>
+                        <div id="loading-indicator" class="spinner-border spinner-border-sm text-primary me-2" role="status" style="display: none;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span id="pending-badge" class="badge bg-danger fs-6">Loading...</span>
+                    </div>
+                </div>
+                <div id="pending-container">
+                    <div class="text-center text-muted mt-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading delivery data...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="section-card">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0 text-primary fw-bold">Notice Board</h5>
+                <button onclick="manualClearFeed()" class="btn btn-outline-secondary btn-sm" style="font-size: 0.65rem; border-radius: 4px;">Clear</button>
+              </div>
+                <div id="activity-feed" class="mt-3">
+                    <div id="feed-placeholder" class="text-center text-muted mt-5 small">Getting Updates...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="itemModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content shadow-lg" style="border-radius: 15px;">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitle">Order Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="bg-light p-3 rounded mb-3 border" style="background:#f9f9f9 !important;">
+                    <h6 class="fw-bold mb-3 small" style="color:#1a3a52;">UPDATE SHIPMENT INFO</h6>
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <label class="data-label">Destination</label>
+                            <input type="text" id="edit-dest" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="data-label">Vendor</label>
+                            <input type="text" id="edit-vendor" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="data-label">Shipment Type</label>
+                            <select id="edit-shiptype" class="form-select form-select-sm">
+                                <option value="LCL">LCL</option>
+                                <option value="FCL">FCL</option>
+                                <option value="CONSOLE">CONSOLE</option>
+                                <option value="CURRIOR">CURRIOR</option>
+				<option value="AIR">AIR</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="data-label">Loading Facility</label>
+                            <select id="edit-facility" class="form-select form-select-sm">
+                                <option value="VN">VN</option>
+                                <option value="MC">MC</option>
+                                <option value="VN+MC">VN+MC</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="data-label">Invoice/PL</label>
+                            <select id="edit-invoice" class="form-select form-select-sm">
+                                <option value="PENDING">PENDING</option>
+                                <option value="IN-PROGRESS">IN-PROGRESS</option>
+                                <option value="COMPLETE">COMPLETE</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="data-label">Cusdec Status</label>
+                            <select id="edit-cusdec-status" class="form-select form-select-sm">
+                                <option value="PENDING">PENDING</option>
+                                <option value="AUTHORIZED">AUTHORIZED</option>
+                                <option value="COMPLETE">COMPLETE</option>
+                                <option value="AMENDED">AMENDED</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="data-label">Cusdec No</label>
+                            <input type="text" id="edit-cusdec-no" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="data-label">Note</label>
+                            <textarea id="edit-note" class="form-control form-control-sm" rows="2" placeholder="Add any additional notes..."></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="data-label text-danger fw-bold">FCL/LCL Cutoff</label>
+                            <input type="text" id="edit-cutoff" class="form-control form-control-sm border-danger" placeholder="DD/MM HH:MM">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="data-label fw-bold text-danger">Loading Status</label>
+                            <select id="edit-loading-status" class="form-select form-select-sm border-danger">
+                                <option value="PENDING">PENDING</option>
+                                <option value="IN-PROGRESS">IN-PROGRESS</option>
+                                <option value="COMPLETE">COMPLETE</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 offset-md-8">
+                            <label class="data-label text-primary fw-bold">STAFF PIN 🔐</label>
+                            <input type="password" id="staff-pin" class="form-control form-control-sm border-primary" placeholder="Enter PIN to Save">
+                        </div>
+                        <div class="col-md-12 text-end mt-2">
+                            <button id="update-btn" onclick="submitUpdate()" class="btn btn-primary btn-sm fw-bold px-4" style="background:#1a3a52; border-color:#1a3a52;">UPDATE</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="fw-bold small text-muted mb-0">ITEM BREAKDOWN</h6>
+                    <input type="text" id="skuSearch" class="form-control form-control-sm w-50" placeholder="🔍 Search SKU..." onkeyup="filterSKUs()">
+                </div>
+                
+                <div class="table-responsive" style="max-height: 250px;">
+                    <table class="table table-hover table-sm small mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th class="ps-3">Product Code</th>
+                                <th class="text-center">QTY</th>
+                                <th class="text-center">CTNS</th>
+                                <th>Description</th>
+                                <th class="pe-3">Location</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalTableBody"></tbody>
+                        <tfoot id="modalTableFoot"></tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="newOrderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content shadow-lg" style="border-radius: 15px;">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Add New Shipment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3 mb-3 p-3 bg-light rounded border" style="background:#f9f9f9 !important;">
+                    <div class="col-md-3">
+                        <label class="data-label">Market Type</label>
+                        <select id="new-market" class="form-select form-select-sm"><option value="International">International</option><option value="Local">Local</option></select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="data-label">Release Order (RO)</label>
+                        <input type="text" id="new-ro" class="form-control form-control-sm" placeholder="BD-H-XXXX">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="data-label">Vendor Name</label>
+                        <input type="text" id="new-vendor" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="data-label">Destination</label>
+                        <input type="text" id="new-dest" class="form-control form-control-sm">
+                    </div>
+                </div>
+
+                <div class="row g-2 p-2 border rounded bg-white align-items-end">
+                    <div class="col-md-2">
+                        <label class="data-label">Product Code</label>
+                        <input type="text" id="new-product" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="data-label">Description</label>
+                        <input type="text" id="new-desc" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-1">
+                        <label class="data-label">QTY</label>
+                        <input type="number" id="new-qty" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-1">
+                        <label class="data-label">CTNS</label>
+                        <input type="number" id="new-ctns" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="data-label">Location</label>
+                        <input type="text" id="new-loc" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-3">
+                        <button onclick="addSkuToStage()" class="btn btn-secondary btn-sm fw-bold w-100" style="background:#5a6c7d; border-color:#5a6c7d;">Add Item</button>
+                    </div>
+                </div>
+
+                <div class="table-responsive border rounded mt-3" style="max-height: 200px; background: white;">
+                    <table class="table table-sm small mb-0">
+                        <thead class="table-secondary">
+                            <tr>
+                                <th>Product</th>
+                                <th>Description</th>
+                                <th class="text-center">QTY</th>
+                                <th class="text-center">CTNS</th>
+                                <th>Location</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sku-stage-body">
+                            <tr><td colspan="6" class="text-center text-muted">No items added yet.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-4">
+                     <label class="data-label text-primary fw-bold">STAFF PIN 🔐</label>
+                     <input type="password" id="new-order-pin" class="form-control border-primary" placeholder="Enter PIN to confirm">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="save-new-btn" onclick="submitNewOrder()" class="btn btn-primary fw-bold px-4" style="background:#1a3a52; border-color:#1a3a52;">SAVE SHIPMENT</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="completeShipmentsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content shadow-lg" style="border-radius: 15px;">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Completed Shipments</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <input type="text" id="complete-search" class="form-control" placeholder="🔍 Search RO, Vendor, Destination..." onkeyup="filterCompletedShipments()">
+                </div>
+                <div class="table-responsive" style="max-height: 500px;">
+                    <table class="table table-hover table-sm small">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>RO Number</th>
+                                <th>Vendor</th>
+                                <th>Destination</th>
+                                <th>Ship Type</th>
+                                <th>Finish Time</th>
+                                <th>Work Time</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="complete-shipments-body">
+                            <tr><td colspan="7" class="text-center text-muted py-4">No completed shipments found.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="completeReportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content shadow-lg" style="border-radius: 15px;">
+            <div class="modal-header bg-primary text-white" style="border-radius: 15px 15px 0 0;">
+                <h5 class="modal-title">📋 Professional Shipment Report</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <!-- Report Info Section -->
+                <div class="bg-light p-3 rounded mb-4 border" style="border-left: 4px solid #002f6c;">
+                    <h6 class="fw-bold text-primary mb-3 small">REPORT DETAILS</h6>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="data-label">Release Order (RO)</label>
+                            <input type="text" id="report-input-ro" class="form-control form-control-sm" placeholder="e.g., BD-H-001">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="data-label">Vendor Name</label>
+                            <input type="text" id="report-input-vendor" class="form-control form-control-sm" placeholder="Vendor name">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="data-label">Loading Start Time</label>
+                            <input type="datetime-local" id="report-input-start" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="data-label">Loading Complete Time</label>
+                            <input type="datetime-local" id="report-input-end" class="form-control form-control-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Items Section -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold small text-muted mb-0">LOADED ITEMS</h6>
+                        <button onclick="addReportItem()" class="btn btn-dark btn-sm" style="font-size: 0.75rem;">➕ Add Item</button>
+                    </div>
+                    <div class="table-responsive" style="max-height: 300px; border: 1px solid #ddd; border-radius: 8px;">
+                        <table class="table table-hover table-sm small mb-0" style="table-layout: fixed;">
+                        <colgroup>
+                            <col style="width: 20%;" />
+                            <col style="width: 12%;" />
+                            <col style="width: 12%;" />
+                            <col style="width: 38%;" />
+                            <col style="width: 13%;" />
+                            <col style="width: 5%;" />
+                        </colgroup>
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th class="ps-3">Product Code</th>
+                                <th class="text-center">QTY</th>
+                                <th class="text-center">CTNS</th>
+                                <th>Description</th>
+                                <th class="pe-3">Location</th>
+                                <th class="text-center" style="width:60px;">Action</th>
+                            </tr>
+                        </thead>
+                            <tbody id="reportItemsBody">
+                                <tr><td colspan="6" class="text-center py-3 text-muted small">No items added. Click "Add Item" to start.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Add Item Form (Hidden by default) -->
+                <div id="addItemForm" class="border p-3 rounded mb-3" style="background: #f9f9f9; display: none;">
+                    <h6 class="fw-bold small text-primary mb-3">ADD NEW ITEM</h6>
+                    <div class="row g-2">
+                        <div class="col-md-2">
+                            <input type="text" id="report-item-code" class="form-control form-control-sm" placeholder="Product Code">
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" id="report-item-desc" class="form-control form-control-sm" placeholder="Description">
+                        </div>
+                        <div class="col-md-1">
+                            <input type="number" id="report-item-qty" class="form-control form-control-sm" placeholder="QTY">
+                        </div>
+                        <div class="col-md-1">
+                            <input type="number" id="report-item-ctns" class="form-control form-control-sm" placeholder="CTN">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="text" id="report-item-loc" class="form-control form-control-sm" placeholder="Location">
+                        </div>
+                        <div class="col-md-3">
+                            <button onclick="saveReportItem()" class="btn btn-success btn-sm w-100">Save Item</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Section -->
+                <div class="alert alert-info p-3 mb-3" style="background: #e3f2fd; border-left: 4px solid #2196f3;">
+                    <div class="row small">
+                        <div class="col-md-3">
+                            <strong>Total Items:</strong> <span id="report-total-items">0</span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Total Qty:</strong> <span id="report-total-qty">0</span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Total Cartons:</strong> <span id="report-total-ctns">0</span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Duration:</strong> <span id="report-total-duration">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" onclick="downloadReportPDF()" class="btn btn-success fw-bold">💾 Download PDF</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz8YKx9m-ljoHOZKCDues7wGvZWkpCZwuzL9tmVNorFNUBZjzpLH2PPx7YoPkzwW-5X/exec";
+    let masterData = [];
+    let previousDataMap = new Map(); 
+    let stagedSkus = [];
+    let currentlyEditingRO = "";
+    let isInitialized = false;
+    
+    const itemModal = new bootstrap.Modal(document.getElementById('itemModal'));
+    const newOrderModal = new bootstrap.Modal(document.getElementById('newOrderModal'));
+    const completeShipmentsModal = new bootstrap.Modal(document.getElementById('completeShipmentsModal'));
+    const completeReportModal = new bootstrap.Modal(document.getElementById('completeReportModal'));
+
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('TAM_THEME', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    }
+
+    function manualClearFeed() {
+        document.getElementById('activity-feed').innerHTML = '<div id="feed-placeholder" class="text-center text-muted mt-5 small">No recent updates</div>';
+    }
+
+    async function refreshAll() {
+        const refreshIcon = document.getElementById('refresh-icon');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const pendingBadge = document.getElementById('pending-badge');
+
+        if (refreshIcon) {
+            refreshIcon.classList.add('refresh-spin');
+            setTimeout(() => refreshIcon && refreshIcon.classList.remove('refresh-spin'), 650);
+        }
+
+        // Show loading indicator
+        if (loadingIndicator) loadingIndicator.style.display = 'inline-block';
+        if (pendingBadge) pendingBadge.textContent = 'Loading...';
+
+        try {
+            const startTime = performance.now();
+            const response = await fetch(WEB_APP_URL);
+            const data = await response.json();
+            const newData = data.opsData.rows || [];
+
+            // Only update if data actually changed or it's the first load
+            const dataChanged = !isInitialized || JSON.stringify(newData) !== JSON.stringify(masterData);
+
+            if (dataChanged) {
+                detectAndNotifyChanges(newData);
+                masterData = newData;
+                renderPending(masterData);
+            }
+
+            // Only filter if there's a search term active
+            const searchTerm = document.getElementById('search-input').value.trim();
+            if (searchTerm) {
+                filterData();
+            }
+
+            const endTime = performance.now();
+            console.log(`Data refresh took ${Math.round(endTime - startTime)}ms`);
+        } catch (e) {
+            console.error("Sync Error:", e);
+            if (pendingBadge) pendingBadge.textContent = 'Error loading data';
+            // Show error notification
+            pushMobileNotification('SYSTEM', 'ERROR', '', 'Failed to load data. Check connection.', '#dc3545');
+        } finally {
+            // Hide loading indicator and update timestamp
+            if (loadingIndicator) loadingIndicator.style.display = 'none';
+            const lastUpdated = document.getElementById('last-updated');
+            if (lastUpdated) {
+                const now = new Date();
+                lastUpdated.textContent = `Last updated: ${now.toLocaleTimeString()}`;
+            }
+        }
+    }
+
+    function detectAndNotifyChanges(newData) {
+        // Track specific keys from the returned opsData object
+        const trackableKeys = { 
+            "COL_8": "CUSDEC NO", 
+            "STATUS_CLEAN": "LOADING STATUS", 
+            "CUTOFF_VALUE": "CUTOFF", 
+            "NOTE_VALUE": "NOTE",
+            "VEHICLE": "VEHICLE DETAILS",
+            "DEST_VALUE": "DESTINATION",
+            "VENDOR_VALUE": "VENDOR",
+            "INVOICE_STATUS": "INV STATUS"
+        };
+
+        if (!isInitialized) {
+            newData.forEach(row => previousDataMap.set(String(row.RO_VALUE), JSON.parse(JSON.stringify(row))));
+            isInitialized = true;
+            return; 
+        }
+
+        newData.forEach(row => {
+            const roId = String(row.RO_VALUE);
+            const oldRow = previousDataMap.get(roId);
+            
+            if (!oldRow) {
+                pushMobileNotification(roId, "NEW ORDER", "", "Added to Summary", "#39ff14");
+            } else {
+                Object.keys(trackableKeys).forEach(key => {
+                    const newVal = row[key];
+                    const oldVal = oldRow[key];
+                    if (newVal !== undefined && oldVal !== undefined && String(newVal) !== String(oldVal)) {
+                        pushMobileNotification(roId, trackableKeys[key], oldVal, newVal, "#007bff");
+                    }
+                });
+            }
+            previousDataMap.set(roId, JSON.parse(JSON.stringify(row)));
+        });
+    }
+
+    function pushMobileNotification(ro, field, oldVal, newVal, color = "#39ff14") {
+        const feed = document.getElementById('activity-feed');
+        const placeholder = document.getElementById('feed-placeholder');
+        if (placeholder) placeholder.remove();
+        const item = document.createElement('div');
+        item.className = 'feed-item shadow-sm';
+        item.style.borderLeft = `4px solid ${color}`;
+        const isNew = field === "NEW ORDER";
+        item.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start mb-1">
+                <span style="color: ${color}; font-weight: bold; font-size: 0.7rem;">${field}</span>
+                <span class="feed-time" style="font-size:0.65rem; color:#888;">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+            </div>
+            <div style="font-size: 0.85rem; margin-bottom: 4px;">
+                <span class="feed-label">RO:</span> <strong style="color:#fff">${ro}</strong>
+            </div>
+            ${isNew ? `<div class="small text-success fw-bold">NEW DELIVERY RECEIVED</div>` : 
+                `<div class="mt-1 p-2" style="background: rgba(255,255,255,0.05); border-radius: 4px; font-size: 0.75rem;">
+                    <span class="text-muted text-decoration-line-through">${oldVal || 'EMPTY'}</span> <span class="mx-2" style="color: ${color};">➔</span> <span style="color: #fff; font-weight: bold;">${newVal || 'N/A'}</span>
+                </div>`} `;
+        feed.insertBefore(item, feed.firstChild);
+        if (feed.children.length > 30) feed.removeChild(feed.lastChild);
+    }
+
+    function renderPending(data) {
+        const startTime = performance.now();
+
+        function sanitizeHtml(str) {
+            return String(str || '').replace(/[&<>'"]/g, (char) => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            }[char]));
+        }
+
+        let activeData = data.filter(row => {
+            const status = String(row.STATUS_CLEAN || "").toUpperCase();
+            return status === "PENDING" || status === "IN-PROGRESS";
+        });
+
+        // Sort by cutoff date (cached date parsing)
+        activeData.sort((a, b) => {
+            const cutoffA = a.CUTOFF_VALUE || '';
+            const cutoffB = b.CUTOFF_VALUE || '';
+            if (!cutoffA && !cutoffB) return 0;
+            if (!cutoffA) return 1;
+            if (!cutoffB) return -1;
+
+            // Use cached parsed dates if available
+            if (!a._parsedCutoff) {
+                a._parsedCutoff = parseCutoffDate(cutoffA);
+            }
+            if (!b._parsedCutoff) {
+                b._parsedCutoff = parseCutoffDate(cutoffB);
+            }
+
+            return a._parsedCutoff - b._parsedCutoff;
+        });
+
+        let activeHtml = ""; let count = 0;
+        const now = new Date();
+        const twoDaysFromNow = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
+
+        activeData.forEach((row) => {
+            const noteText = String(row.NOTE_VALUE || row.note || '').trim();
+            count++;
+            const isInProgress = String(row.STATUS_CLEAN || "").toUpperCase() === "IN-PROGRESS";
+            const timerBadge = (isInProgress && row.START_TIME_DISPLAY) ? `<span class="timer-badge ms-2">⏱️ Active: ${sanitizeHtml(row.START_TIME_DISPLAY)}</span>` : '';
+            const badge = isInProgress ? `<span class="badge bg-success ms-2">IN-PROGRESS</span>${timerBadge}` : '<span class="badge bg-warning text-dark ms-2">WAITING</span>';
+
+            // Check if cutoff is within 2 days (optimized)
+            let isCloseToCutoff = false;
+            if (row.CUTOFF_VALUE && !row._parsedCutoff) {
+                row._parsedCutoff = parseCutoffDate(row.CUTOFF_VALUE);
+            }
+            if (row._parsedCutoff) {
+                isCloseToCutoff = row._parsedCutoff <= twoDaysFromNow && row._parsedCutoff >= now;
+            }
+
+            const glowClass = isCloseToCutoff ? 'glow' : '';
+
+            activeHtml += `
+            <div class="card p-3 mb-2 shadow-sm ${isInProgress ? 'progress-row' : 'pending-row'} ${glowClass}" onclick="showDetails('${row.RO_VALUE}')">
+                <div class="row align-items-center">
+                    <div class="col-md-7">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <h6 class="text-dark fw-bold">${row.RO_VALUE} | ${row.VENDOR_VALUE} ${badge}</h6>
+                            ${row.RO_VALUE.startsWith('BD') && row.TYPE_VALUE !== 'currior' ? `<button class="btn btn-link p-0" onclick="event.stopPropagation(); window.open('https://tms.myroadrunner.lk/', '_blank')" style="font-size: 0.7rem;">🚛 Request Vehicle</button>` : ''}
+                        </div>
+                        <div class="mb-2">
+                            <span class="facility-tag me-2">🏭 ${row.FACILITY_VALUE || 'VN'}</span>
+                            <span class="status-badge ${getStatusClass(row.INVOICE_STATUS)}">INV: ${row.INVOICE_STATUS}</span>
+                            <span class="status-badge ${getStatusClass(row.CUSDEC_STATUS)}">CUSDEC: ${row.CUSDEC_STATUS}</span>
+                        </div>
+                        <div class="data-label">📍 ${row.DEST_VALUE || '-'} | 🚢 ${row.TYPE_VALUE || 'LOCAL'}</div>
+                    </div>
+                    <div class="col-md-5 text-end">
+                        <div class="cutoff-text mb-1">Cutoff: ${row.CUTOFF_VALUE || '-'}</div>
+                        <button class="btn ${isInProgress ? 'btn-primary' : 'btn-outline-primary'} btn-sm px-3" style="border-radius:4px;">
+                            ${isInProgress ? 'Update Work' : 'Start Loading'}
+                        </button>
+                    </div>
+                </div>
+                ${noteText ? `<div class="mt-2 small text-muted"><strong>Note:</strong> ${sanitizeHtml(noteText)}</div>` : ''}
+            </div>`;
+        });
+
+        document.getElementById('pending-container').innerHTML = activeHtml || `<div class="text-center text-muted mt-5"><h5>Everything Loaded 🎉</h5></div>`;
+        document.getElementById('pending-badge').innerText = count + " Items Active";
+
+        const endTime = performance.now();
+        console.log(`Render took ${Math.round(endTime - startTime)}ms for ${count} items`);
+    }
+
+    // Optimized date parsing function
+    function parseCutoffDate(str) {
+        const match = str.match(/^(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{2})$/);
+        if (!match) return new Date(0);
+        const [, day, month, hour, min] = match;
+        const now = new Date();
+        const year = now.getFullYear();
+        return new Date(year, parseInt(month) - 1, parseInt(day), parseInt(hour), parseInt(min));
+    }
+
+    function getStatusClass(s) {
+        if (!s) return 'bg-pending';
+        const status = s.toUpperCase();
+        // Updated logic to match multiple positive statuses
+        return (status.includes('COMPLETE') || status.includes('OK') || status.includes('AUTH') || status.includes('AUTHORIZED')) ? 'bg-progress' : 'bg-pending';
+    }
+
+    function showDetails(roNumber) {
+        const row = masterData.find(item => String(item.RO_VALUE) === String(roNumber));
+        if (!row) return;
+        currentlyEditingRO = roNumber;
+        
+        document.getElementById('modalTitle').innerText = `Details: ${row.RO_VALUE}`;
+        document.getElementById('edit-dest').value = row.DEST_VALUE || "";
+        document.getElementById('edit-vendor').value = row.VENDOR_VALUE || "";
+        document.getElementById('edit-shiptype').value = row.TYPE_VALUE || "LCL";
+        document.getElementById('edit-facility').value = row.FACILITY_VALUE || "VN";
+        document.getElementById('edit-invoice').value = row.INVOICE_STATUS || "PENDING";
+        document.getElementById('edit-cusdec-status').value = row.CUSDEC_STATUS || "PENDING";
+        document.getElementById('edit-cusdec-no').value = row.COL_8 || "";
+        document.getElementById('edit-note').value = row.NOTE_VALUE || "";
+        document.getElementById('edit-cutoff').value = row.CUTOFF_VALUE || ""; 
+        document.getElementById('edit-loading-status').value = row.STATUS_CLEAN || "PENDING";
+        document.getElementById('staff-pin').value = "";
+        document.getElementById('skuSearch').value = ""; 
+
+        let tableHtml = ""; let tQty = 0, tCtns = 0;
+        if (row.ITEMS && row.ITEMS.length > 0) {
+            row.ITEMS.forEach(item => {
+                const q = Number(item.qty) || 0;
+                const c = Number(item.ctns) || 0;
+                tQty += q; tCtns += c;
+                tableHtml += `
+                    <tr>
+                        <td class="ps-3 fw-bold text-secondary">${item.productCode || 'N/A'}</td>
+                        <td class="text-center">${q}</td>
+                        <td class="text-center">${c}</td>
+                        <td>${item.description || '-'}</td>
+                        <td class="pe-3"><span class="badge bg-light text-dark border">${item.location || 'TBA'}</span></td>
+                    </tr>`;
+            });
+            document.getElementById('modalTableFoot').innerHTML = `
+                <tr class="table-light fw-bold">
+                    <td class="ps-3">TOTALS</td>
+                    <td class="text-center">${tQty}</td>
+                    <td class="text-center">${tCtns}</td>
+                    <td colspan="2"></td>
+                </tr>`;
+        } else {
+            tableHtml = `<tr><td colspan="5" class="text-center py-3 text-muted">No line items found.</td></tr>`;
+            document.getElementById('modalTableFoot').innerHTML = "";
+        }
+        document.getElementById('modalTableBody').innerHTML = tableHtml;
+        itemModal.show();
+    }
+
+    function filterSKUs() {
+        const term = document.getElementById("skuSearch").value.toUpperCase();
+        const rows = document.getElementById("modalTableBody").getElementsByTagName("tr");
+        for (let row of rows) {
+            const text = row.innerText.toUpperCase();
+            row.style.display = text.includes(term) ? "" : "none";
+        }
+    }
+
+    async function submitUpdate() {
+        const pin = document.getElementById('staff-pin').value;
+        if (!pin) { alert("PIN required."); return; }
+        const btn = document.getElementById('update-btn'); btn.disabled = true; btn.innerHTML = "⌛ Updating...";
+        
+        const params = new URLSearchParams({ 
+            action: 'updateRO', 
+            pin: pin, 
+            ro: currentlyEditingRO, 
+            dest: document.getElementById('edit-dest').value, 
+            vendor: document.getElementById('edit-vendor').value, 
+            shipType: document.getElementById('edit-shiptype').value, 
+            facility: document.getElementById('edit-facility').value, 
+            invoicePl: document.getElementById('edit-invoice').value, 
+            cusdecStatus: document.getElementById('edit-cusdec-status').value, 
+            cusdecNo: document.getElementById('edit-cusdec-no').value, 
+            note: document.getElementById('edit-note').value,
+            cutoff: document.getElementById('edit-cutoff').value, 
+            loading: document.getElementById('edit-loading-status').value 
+        });
+
+        try {
+            const r = await fetch(`${WEB_APP_URL}?${params.toString()}`);
+            const res = await r.json();
+            if (res.status === "success") { 
+                itemModal.hide(); 
+                refreshAll(); 
+            } else { 
+                alert(res.message); 
+            }
+        } catch (e) { 
+            alert("Error updating. Check connection."); 
+        }
+        btn.disabled = false; btn.innerHTML = "UPDATE DATABASE";
+    }
+
+    function openNewOrderModal() { 
+        stagedSkus = [];
+        renderStageTable();
+        newOrderModal.show(); 
+    }
+
+    function openCompleteShipmentsModal() {
+        const completedShipments = masterData.filter(row => String(row.STATUS_CLEAN || "").toUpperCase() === "COMPLETE");
+        
+        if (completedShipments.length === 0) {
+            document.getElementById('complete-shipments-body').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No completed shipments found.</td></tr>';
+            completeShipmentsModal.show();
+            return;
+        }
+
+        let tableHtml = "";
+        completedShipments.forEach(row => {
+            tableHtml += `
+                <tr onclick="showCompleteShipmentReport('${row.RO_VALUE}')" style="cursor: pointer;">
+                    <td><span class="fw-bold">${row.RO_VALUE}</span></td>
+                    <td>${row.VENDOR_VALUE || '-'}</td>
+                    <td>${row.DEST_VALUE || '-'}</td>
+                    <td><span class="badge bg-light text-dark">${row.TYPE_VALUE || 'LOCAL'}</span></td>
+                    <td><span class="badge bg-light text-success">${row.COMPLETE_TIME_DISPLAY || '-'}</span></td>
+                    <td><span class="fw-bold text-primary">${row.DURATION || '-'}</span></td>
+                    <td class="text-center"><button class="btn btn-outline-secondary btn-sm" onclick="event.stopPropagation(); showCompleteShipmentReport('${row.RO_VALUE}')">View</button></td>
+                </tr>`;
+        });
+        
+        document.getElementById('complete-shipments-body').innerHTML = tableHtml;
+        document.getElementById('complete-search').value = "";
+        completeShipmentsModal.show();
+    }
+
+    function filterCompletedShipments() {
+        const searchTerm = document.getElementById('complete-search').value.toUpperCase();
+        const rows = document.getElementById('complete-shipments-body').getElementsByTagName('tr');
+        let visibleCount = 0;
+        
+        for (let row of rows) {
+            const roNumber = row.cells[0]?.textContent || "";
+            const vendor = row.cells[1]?.textContent || "";
+            const destination = row.cells[2]?.textContent || "";
+            
+            const matches = roNumber.toUpperCase().includes(searchTerm) || 
+                          vendor.toUpperCase().includes(searchTerm) ||
+                          destination.toUpperCase().includes(searchTerm);
+            
+            row.style.display = matches ? "" : "none";
+            if (matches) visibleCount++;
+        }
+        
+        if (visibleCount === 0) {
+            document.getElementById('complete-shipments-body').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No matching shipments found.</td></tr>';
+        }
+    }
+
+    // Report Modal Variables
+    let reportItems = [];
+
+    function showCompleteShipmentReport(roNumber) {
+        const row = masterData.find(item => String(item.RO_VALUE) === String(roNumber));
+        reportItems = []; // Clear existing items
+        
+        // Clear all form fields first
+        document.getElementById('report-input-ro').value = '';
+        document.getElementById('report-input-vendor').value = '';
+        document.getElementById('report-input-start').value = '';
+        document.getElementById('report-input-end').value = '';
+        
+        // Helper function to convert database time to datetime-local format
+        const convertToDateTimeLocal = (timeStr) => {
+            if (!timeStr) return '';
+            try {
+                // Try to parse the time string and convert to YYYY-MM-DDTHH:MM format
+                const date = new Date(timeStr);
+                if (isNaN(date.getTime())) return '';
+                
+                // Format as YYYY-MM-DDTHH:MM for datetime-local input
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                
+                return `${year}-${month}-${day}T${hours}:${minutes}`;
+            } catch (e) {
+                return '';
+            }
+        };
+        
+        if (row) {
+            // Populate input fields from master data
+            document.getElementById('report-input-ro').value = row.RO_VALUE || '';
+            document.getElementById('report-input-vendor').value = row.VENDOR_VALUE || '';
+            
+            // Populate loading times from database and convert to datetime-local format
+            document.getElementById('report-input-start').value = convertToDateTimeLocal(row.START_TIME_DISPLAY);
+            document.getElementById('report-input-end').value = convertToDateTimeLocal(row.COMPLETE_TIME_DISPLAY);
+            
+            // Populate items from database
+            if (row.ITEMS && row.ITEMS.length > 0) {
+                row.ITEMS.forEach(item => {
+                    reportItems.push({
+                        productCode: item.productCode || '',
+                        qty: Number(item.qty) || 0,
+                        ctns: Number(item.ctns) || 0,
+                        description: item.description || '',
+                        location: item.location || ''
+                    });
+                });
+            }
+        }
+        
+        renderReportItems();
+        completeShipmentsModal.hide();
+        completeReportModal.show();
+    }
+
+    function addReportItem() {
+        document.getElementById('addItemForm').style.display = 'block';
+        document.getElementById('report-item-code').focus();
+    }
+
+    function saveReportItem() {
+        const code = document.getElementById('report-item-code').value;
+        const qty = Number(document.getElementById('report-item-qty').value) || 0;
+        
+        if (!code || qty === 0) { alert("Product Code and QTY required"); return; }
+        
+        reportItems.push({
+            productCode: code,
+            qty: qty,
+            ctns: Number(document.getElementById('report-item-ctns').value) || 0,
+            description: document.getElementById('report-item-desc').value,
+            location: document.getElementById('report-item-loc').value
+        });
+        
+        renderReportItems();
+        document.getElementById('addItemForm').style.display = 'none';
+        document.getElementById('report-item-code').value = '';
+        document.getElementById('report-item-qty').value = '';
+        document.getElementById('report-item-ctns').value = '';
+        document.getElementById('report-item-desc').value = '';
+        document.getElementById('report-item-loc').value = '';
+    }
+
+    function removeReportItem(index) {
+        reportItems.splice(index, 1);
+        renderReportItems();
+    }
+
+    function renderReportItems() {
+        const body = document.getElementById('reportItemsBody');
+        let totalQty = 0, totalCtns = 0;
+        
+        if (reportItems.length === 0) {
+            body.innerHTML = '<tr><td colspan="6" class="text-center py-3 text-muted small">No items added. Click "Add Item" to start.</td></tr>';
+            document.getElementById('report-total-items').innerText = '0';
+            document.getElementById('report-total-qty').innerText = '0';
+            document.getElementById('report-total-ctns').innerText = '0';
+            return;
+        }
+        
+        body.innerHTML = reportItems.map((item, index) => {
+            totalQty += item.qty;
+            totalCtns += item.ctns;
+            return `
+                <tr style="background:#ffffff; line-height:1.3;">
+                    <td class="ps-3" style="word-break:break-word; white-space:normal;">${item.productCode}</td>
+                    <td class="text-center" style="word-break:break-word; white-space:normal;">${item.qty}</td>
+                    <td class="text-center" style="word-break:break-word; white-space:normal;">${item.ctns}</td>
+                    <td style="word-break:break-word; white-space:normal; max-width:320px;">${item.description || '-'}</td>
+                    <td class="pe-3" style="word-break:break-word; white-space:normal;"><span class="badge bg-light text-dark">${item.location || 'TBA'}</span></td>
+                    <td class="text-center">
+                        <button class="btn btn-outline-danger btn-sm" onclick="removeReportItem(${index})" style="font-size:0.7rem;">✕</button>
+                    </td>
+                </tr>`;
+        }).join('');
+        
+        document.getElementById('report-total-items').innerText = reportItems.length;
+        document.getElementById('report-total-qty').innerText = totalQty;
+        document.getElementById('report-total-ctns').innerText = totalCtns;
+        
+        // Calculate duration
+        const startInput = document.getElementById('report-input-start').value;
+        const endInput = document.getElementById('report-input-end').value;
+        if (startInput && endInput) {
+            const start = new Date(startInput);
+            const end = new Date(endInput);
+            const diff = (end - start) / 1000; // seconds
+            const hours = Math.floor(diff / 3600);
+            const mins = Math.floor((diff % 3600) / 60);
+            document.getElementById('report-total-duration').innerText = `${hours}h ${mins}m`;
+        } else {
+            document.getElementById('report-total-duration').innerText = '-';
+        }
+    }
+
+    function downloadReportPDF() {
+        const roValue = document.getElementById('report-input-ro').value || 'Report';
+        const vendorValue = document.getElementById('report-input-vendor').value || '-';
+        const startValue = document.getElementById('report-input-start').value;
+        const endValue = document.getElementById('report-input-end').value;
+        
+        if (reportItems.length === 0) { alert("Please add items to the report"); return; }
+        
+        // Format dates
+        const formatDateTime = (dateStr) => {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleString('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        };
+        
+        const startTime = formatDateTime(startValue);
+        const endTime = formatDateTime(endValue);
+        
+        // Calculate duration
+        let duration = '-';
+        if (startValue && endValue) {
+            const start = new Date(startValue);
+            const end = new Date(endValue);
+            const diff = (end - start) / 1000;
+            const hours = Math.floor(diff / 3600);
+            const mins = Math.floor((diff % 3600) / 60);
+            duration = `${hours}h ${mins}m`;
+        }
+        
+        // Generate items rows
+        let itemsRows = '';
+        let totalQty = 0, totalCtns = 0;
+        reportItems.forEach(item => {
+            totalQty += item.qty;
+            totalCtns += item.ctns;
+            itemsRows += `
+                <tr>
+                    <td style="padding:10px;border:1px solid #d0d0d0;">${item.productCode || '-'}</td>
+                    <td style="padding:10px;border:1px solid #d0d0d0;text-align:center;">${item.qty}</td>
+                    <td style="padding:10px;border:1px solid #d0d0d0;text-align:center;">${item.ctns}</td>
+                    <td style="padding:10px;border:1px solid #d0d0d0;">${item.description || '-'}</td>
+                    <td style="padding:10px;border:1px solid #d0d0d0;text-align:center;">${item.location || 'TBA'}</td>
+                </tr>`;
+        });
+        
+        itemsRows += `
+            <tr style="background:#e9ecef;font-weight:600;">
+                <td style="padding:10px;border:1px solid #d0d0d0;">TOTAL</td>
+                <td style="padding:10px;border:1px solid #d0d0d0;text-align:center;">${totalQty}</td>
+                <td style="padding:10px;border:1px solid #d0d0d0;text-align:center;">${totalCtns}</td>
+                <td colspan="2" style="padding:10px;border:1px solid #d0d0d0;"></td>
+            </tr>`;
+        
+        const reportDate = new Date().toLocaleString('en-GB', {
+            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
+        
+        // Create HTML for PDF
+        const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>TAM Shipment Report - ${roValue}</title>
+            <style>
+                body { font-family: 'Calibri', 'Arial', sans-serif; margin: 0; padding: 20px; color: #333; background: #fff; }
+                .header { background: #002f6c; color: white; padding: 25px; text-align: center; margin: -20px -20px 0 -20px; padding-bottom: 20px; }
+                .header h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 1px; }
+                .header p { margin: 8px 0 0 0; font-size: 12px; opacity: 0.95; }
+                .content { margin-top: 20px; }
+                .section-title { background: #f5f5f5; padding: 12px 15px; font-size: 13px; font-weight: 700; color: #002f6c; border-left: 4px solid #002f6c; margin-top: 20px; margin-bottom: 10px; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 15px; table-layout: fixed; }
+                th, td { padding: 10px; text-align: left; border: 1px solid #d0d0d0; word-break: break-word; white-space: normal; overflow-wrap: anywhere; line-height: 1.3; vertical-align: top; }
+                th { background: #e9ecef; font-weight: 700; color: #333; }
+                tr:nth-child(even) { background: #fafafa; }
+                .label-cell { background: #f5f5f5; font-weight: 600; width: 25%; }
+                .value-cell { font-size: 13px; }
+                .text-center { text-align: center; }
+                .footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #d0d0d0; text-align: center; font-size: 11px; color: #666; }
+                .total-row { background: #e9ecef; font-weight: 600; }
+                .report-items th, .report-items td { font-size: 0.8rem; }
+
+                .report-items th:nth-child(1), .report-items td:nth-child(1) { width: 20%; }
+                .report-items th:nth-child(2), .report-items td:nth-child(2),
+                .report-items th:nth-child(3), .report-items td:nth-child(3) { width: 12%; }
+                .report-items th:nth-child(4), .report-items td:nth-child(4) { width: 40%; }
+                .report-items th:nth-child(5), .report-items td:nth-child(5) { width: 16%; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>SHIPMENT DELIVERY REPORT</h1>
+                <p>TAM Delivery Management System | Generated: ${reportDate}</p>
+            </div>
+            
+            <div class="content">
+                <div class="section-title">SHIPMENT INFORMATION</div>
+                <table>
+                    <tr>
+                        <td class="label-cell">Release Order (RO)</td>
+                        <td class="value-cell"><strong>${roValue}</strong></td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">Vendor Name</td>
+                        <td class="value-cell">${vendorValue}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">Loading Start Time</td>
+                        <td class="value-cell">${startTime}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">Loading Complete Time</td>
+                        <td class="value-cell">${endTime}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">Total Duration</td>
+                        <td class="value-cell"><strong>${duration}</strong></td>
+                    </tr>
+                </table>
+                
+                <div class="section-title">LOADED ITEMS</div>
+                <table class="report-items">
+                    <colgroup>
+                        <col style="width:20%;" />
+                        <col style="width:12%;" />
+                        <col style="width:12%;" />
+                        <col style="width:40%;" />
+                        <col style="width:16%;" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Product Code</th>
+                            <th class="text-center">Quantity</th>
+                            <th class="text-center">Cartons</th>
+                            <th>Description</th>
+                            <th class="text-center">Location</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsRows}
+                    </tbody>
+                </table>
+                
+                <div class="footer">
+                    <p>This is an officially generated report by TAM Delivery Management System.</p>
+                    <p>© TAM OPERATIONS 2026 | All Rights Reserved | Advantis Free Zone LTD </p>
+                </div>
+            </div>
+        </body>
+        </html>`;
+        
+        // Use html2pdf to generate PDF
+        const options = {
+            margin: 5,
+            filename: `TAM_Report_${roValue}_${new Date().toISOString().split('T')[0]}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+        };
+        
+        html2pdf().set(options).from(htmlContent).save();
+    }
+
+    function addSkuToStage() {
+        const prod = document.getElementById('new-product').value;
+        const qty = document.getElementById('new-qty').value;
+        if(!prod || !qty) { alert("Product and QTY required"); return; }
+        
+        stagedSkus.push({
+            product: prod,
+            desc: document.getElementById('new-desc').value,
+            loc: document.getElementById('new-loc').value,
+            qty: qty,
+            ctns: document.getElementById('new-ctns').value
+        });
+        renderStageTable();
+        ["new-product", "new-desc", "new-loc", "new-qty", "new-ctns"].forEach(id => document.getElementById(id).value = "");
+    }
+
+    function renderStageTable() {
+        const body = document.getElementById('sku-stage-body');
+        if (stagedSkus.length === 0) {
+            body.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No items added yet.</td></tr>';
+            return;
+        }
+        body.innerHTML = stagedSkus.map((item, index) => `
+            <tr>
+                <td>${item.product}</td>
+                <td>${item.desc}</td>
+                <td class="text-center">${item.qty}</td>
+                <td class="text-center">${item.ctns}</td>
+                <td>${item.loc}</td>
+                <td><button class="btn btn-outline-danger btn-sm" onclick="stagedSkus.splice(${index},1);renderStageTable();">×</button></td>
+            </tr>`).join('');
+    }
+
+    async function submitNewOrder() {
+        const pin = document.getElementById('new-order-pin').value;
+        const ro = document.getElementById('new-ro').value;
+        if(!pin || !ro || stagedSkus.length === 0) { alert("PIN, RO and at least one item required."); return; }
+        const btn = document.getElementById('save-new-btn'); btn.disabled = true;
+        
+        const payload = { 
+            action: 'addNewOrder', 
+            pin: pin, 
+            market: document.getElementById('new-market').value, 
+            ro: ro, 
+            vendor: document.getElementById('new-vendor').value, 
+            dest: document.getElementById('new-dest').value, 
+            items: JSON.stringify(stagedSkus)
+        };
+
+        try {
+            const r = await fetch(`${WEB_APP_URL}?${new URLSearchParams(payload).toString()}`);
+            const res = await r.json();
+            if(res.status === "success") { 
+                newOrderModal.hide(); 
+                ["new-ro", "new-vendor", "new-dest", "new-order-pin"].forEach(id => document.getElementById(id).value = "");
+                refreshAll(); 
+            } else { alert(res.message); }
+        } catch(e) { alert("Network error."); }
+        btn.disabled = false;
+    }
+
+    function filterData() {
+        const term = document.getElementById('search-input').value.toUpperCase();
+        const filtered = masterData.filter(row => 
+            String(row.RO_VALUE).toUpperCase().includes(term) || 
+            String(row.VENDOR_VALUE).toUpperCase().includes(term) ||
+            String(row.DEST_VALUE).toUpperCase().includes(term)
+        );
+        renderPending(filtered);
+    }
+
+    function exportToExcel() {
+        if (masterData.length === 0) { alert("No data to export"); return; }
+        
+        // Create detailed export with all items
+        const detailedData = [];
+        masterData.forEach(r => {
+            if (r.ITEMS && r.ITEMS.length > 0) {
+                let isFirst = true;
+                r.ITEMS.forEach(item => {
+                    if (isFirst) {
+                        detailedData.push({
+                            "RO Number": r.RO_VALUE,
+                            "Vendor": r.VENDOR_VALUE,
+                            "Destination": r.DEST_VALUE,
+                            "Ship Type": r.TYPE_VALUE,
+                            "Facility": r.FACILITY_VALUE,
+                            "Invoice Status": r.INVOICE_STATUS,
+                            "Cusdec Status": r.CUSDEC_STATUS,
+                            "Cusdec No": r.COL_8 || "-",
+                            "Note": r.NOTE_VALUE || "-",
+                            "Loading Status": r.STATUS_CLEAN,
+                            "Cutoff": r.CUTOFF_VALUE,
+                            "Start Time": r.START_TIME_DISPLAY || "-",
+                            "Finish Time": r.COMPLETE_TIME_DISPLAY || "-",
+                            "Duration": r.DURATION || "-",
+                            "Product Code": item.productCode || "-",
+                            "QTY": Number(item.qty) || 0,
+                            "Cartons": Number(item.ctns) || 0,
+                            "Description": item.description || "-",
+                            "Location": item.location || "-"
+                        });
+                        isFirst = false;
+                    } else {
+                        detailedData.push({
+                            "RO Number": "",
+                            "Vendor": "",
+                            "Destination": "",
+                            "Ship Type": "",
+                            "Facility": "",
+                            "Invoice Status": "",
+                            "Cusdec Status": "",
+                            "Cusdec No": "",
+                            "Note": "",
+                            "Loading Status": "",
+                            "Cutoff": "",
+                            "Start Time": "",
+                            "Finish Time": "",
+                            "Duration": "",
+                            "Product Code": item.productCode || "-",
+                            "QTY": Number(item.qty) || 0,
+                            "Cartons": Number(item.ctns) || 0,
+                            "Description": item.description || "-",
+                            "Location": item.location || "-"
+                        });
+                    }
+                });
+            } else {
+                detailedData.push({
+                    "RO Number": r.RO_VALUE,
+                    "Vendor": r.VENDOR_VALUE,
+                    "Destination": r.DEST_VALUE,
+                    "Ship Type": r.TYPE_VALUE,
+                    "Facility": r.FACILITY_VALUE,
+                    "Invoice Status": r.INVOICE_STATUS,
+                    "Cusdec Status": r.CUSDEC_STATUS,
+                    "Cusdec No": r.COL_8 || "-",
+                    "Note": r.NOTE_VALUE || "-",
+                    "Loading Status": r.STATUS_CLEAN,
+                    "Cutoff": r.CUTOFF_VALUE,
+                    "Start Time": r.START_TIME_DISPLAY || "-",
+                    "Finish Time": r.COMPLETE_TIME_DISPLAY || "-",
+                    "Duration": r.DURATION || "-",
+                    "Product Code": "-",
+                    "QTY": "-",
+                    "Cartons": "-",
+                    "Description": "-",
+                    "Location": "-"
+                });
+            }
+        });
+        
+        // Create summary sheet
+        const summaryData = masterData.map(r => ({
+            "RO Number": r.RO_VALUE,
+            "Vendor": r.VENDOR_VALUE,
+            "Destination": r.DEST_VALUE,
+            "Ship Type": r.TYPE_VALUE,
+            "Facility": r.FACILITY_VALUE,
+            "Invoice Status": r.INVOICE_STATUS,
+            "Cusdec Status": r.CUSDEC_STATUS,
+            "Cusdec No": r.COL_8,
+            "Loading Status": r.STATUS_CLEAN,
+            "Cutoff": r.CUTOFF_VALUE,
+            "Start Time": r.START_TIME_DISPLAY || "-",
+            "Finish Time": r.COMPLETE_TIME_DISPLAY || "-",
+            "Duration": r.DURATION || "-"
+        }));
+        
+        const ws1 = XLSX.utils.json_to_sheet(summaryData);
+        const ws2 = XLSX.utils.json_to_sheet(detailedData);
+        
+        // Note: Font styling in XLSX is limited and may not work in all Excel versions
+        // Consider using a different approach for styling if needed
+        
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws1, "Summary");
+        XLSX.utils.book_append_sheet(wb, ws2, "Detailed_with_Items");
+        
+        const fileName = `TAM_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+    }
+
+    window.onload = () => {
+        const savedTheme = localStorage.getItem('TAM_THEME');
+        if (savedTheme === 'dark') document.body.classList.add('dark-mode');
+        refreshAll();
+        setInterval(refreshAll, 300000); // Auto-refresh every 5 minutes (increased from 1 minute)
+    };
+</script>
+
+<footer>
+    © TAM OPERATIONS 2026 | All Rights Reserved | Advantis Free Zone LTD.
+</footer>
+
+</body>
+</html>
