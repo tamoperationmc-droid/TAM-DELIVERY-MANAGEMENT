@@ -10,6 +10,13 @@
         body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; transition: 0.3s; }
         .nav-header { background: #002f6c; color: white; padding: 15px; }
         .section-card { background: white; border-radius: 12px; padding: 20px; height: 82vh; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+        /* Mobile Responsive Adjustments */
+        @media (max-width: 768px) {
+            .section-card { height: auto; min-height: 50vh; margin-bottom: 15px; padding: 12px; }
+            .nav-header h4 { font-size: 1rem; }
+            .btn-sm { padding: 0.2rem 0.4rem; font-size: 0.65rem; }
+        }
         
         .pending-row { border-left: 6px solid #ffc107; margin-bottom: 12px; transition: 0.3s; border-radius: 8px; cursor: pointer; background: #fffdf5; }
         .pending-row:hover { background: #fff4d1; transform: scale(1.01); }
@@ -404,12 +411,12 @@
 <body class="light-mode">
 <div class="nav-header shadow-sm mb-3">
     <div class="container-fluid d-flex justify-content-between align-items-center">
-        <h4 class="mb-0 text-white"> TAM DELIVERY MANAGEMENT SYSTEM</h4>
-        <div class="d-flex align-items-center flex-wrap justify-content-end">
-            <input type="text" id="search-input" class="form-control me-2 mb-2 mb-md-0 flex-grow-1" style="border-radius:20px; max-width: 250px;" placeholder="Search RO, Vendor..." onkeyup="filterData()">
-            <button onclick="openNewOrderModal()" class="btn btn-warning btn-sm fw-bold shadow-sm me-2 mb-2 mb-md-0">➕ New Order</button>
-            <button onclick="openCompleteShipmentsModal()" class="btn btn-info btn-sm fw-bold shadow-sm me-2 mb-2 mb-md-0">✅ Complete</button>
-            <button onclick="exportToExcel()" class="btn btn-success btn-sm fw-bold shadow-sm me-2 mb-2 mb-md-0">📊 Export Excel</button>
+        <h4 class="mb-0 text-white fw-bold">🚛 TDMS</h4>
+        <div class="d-flex align-items-center flex-wrap justify-content-end gap-1">
+            <input type="text" id="search-input" class="form-control mb-1 mb-md-0 flex-grow-1" style="border-radius:20px; max-width: 150px; height: 31px; font-size: 0.75rem;" placeholder="Search..." onkeyup="filterData()">
+            <button onclick="openNewOrderModal()" class="btn btn-warning btn-sm fw-bold shadow-sm mb-1 mb-md-0">➕ Order</button>
+            <button onclick="openCompleteShipmentsModal()" class="btn btn-info btn-sm fw-bold shadow-sm mb-1 mb-md-0">✅ Done</button>
+            <button onclick="exportToExcel()" class="btn btn-success btn-sm fw-bold shadow-sm mb-1 mb-md-0">📊 Export</button>
             <button id="refresh-btn" onclick="refreshAll()" class="btn btn-light btn-sm fw-bold shadow-sm me-2 mb-2 mb-md-0"><span id="refresh-icon" class="me-1">🔄</span>Refresh</button>
             <button id="theme-btn" onclick="toggleDarkMode()" class="btn btn-dark btn-sm fw-bold mb-2 mb-md-0">🌙 Theme</button>
         </div>
@@ -467,7 +474,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4 d-none d-md-block">
                     <div class="section-card">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5 class="mb-0 text-primary fw-bold">Notice Board</h5>
@@ -501,7 +508,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4 d-none d-md-block">
                     <div class="section-card">
                         <h5 class="mb-3 text-primary fw-bold">📊 Export Summary</h5>
                         <div id="bdh-summary" class="small">
@@ -532,7 +539,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4 d-none d-md-block">
                     <div class="section-card">
                         <h5 class="mb-3 text-primary fw-bold">📊 Local Summary</h5>
                         <div id="slh-summary" class="small">
@@ -553,78 +560,85 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="bg-light p-3 rounded mb-3 border" style="background:#f9f9f9 !important;">
-                    <h6 class="fw-bold mb-3 small" style="color:#1a3a52;">UPDATE SHIPMENT INFO</h6>
-                    <div class="row g-2">
-                        <div class="col-md-4">
-                            <label class="data-label">Destination</label>
-                            <input type="text" id="edit-dest" class="form-control form-control-sm">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="data-label">Vendor</label>
-                            <input type="text" id="edit-vendor" class="form-control form-control-sm">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="data-label">Shipment Type</label>
-                            <select id="edit-shiptype" class="form-select form-select-sm">
-                                <option value="LCL">LCL</option>
-                                <option value="FCL">FCL</option>
-                                <option value="CONSOLE">CONSOLE</option>
-                                <option value="CURRIOR">CURRIOR</option>
-				<option value="AIR">AIR</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="data-label">Loading Facility</label>
-                            <select id="edit-facility" class="form-select form-select-sm">
-                                <option value="VN">VN</option>
-                                <option value="MC">MC</option>
-                                <option value="VN+MC">VN+MC</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="data-label">Invoice/PL</label>
-                            <select id="edit-invoice" class="form-select form-select-sm">
-                                <option value="PENDING">PENDING</option>
-                                <option value="IN-PROGRESS">IN-PROGRESS</option>
-                                <option value="COMPLETE">COMPLETE</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="data-label">Cusdec Status</label>
-                            <select id="edit-cusdec-status" class="form-select form-select-sm">
-                                <option value="PENDING">PENDING</option>
-                                <option value="AUTHORIZED">AUTHORIZED</option>
-                                <option value="COMPLETE">COMPLETE</option>
-                                <option value="AMENDED">AMENDED</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="data-label">Cusdec No</label>
-                            <input type="text" id="edit-cusdec-no" class="form-control form-control-sm">
-                        </div>
-                        <div class="col-md-12">
-                            <label class="data-label">Note</label>
-                            <textarea id="edit-note" class="form-control form-control-sm" rows="2" placeholder="Add any additional notes..."></textarea>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="data-label text-danger fw-bold">FCL/LCL Cutoff</label>
-                            <input type="text" id="edit-cutoff" class="form-control form-control-sm border-danger" placeholder="DD/MM HH:MM">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="data-label fw-bold text-danger">Loading Status</label>
-                            <select id="edit-loading-status" class="form-select form-select-sm border-danger">
-                                <option value="PENDING">PENDING</option>
-                                <option value="IN-PROGRESS">IN-PROGRESS</option>
-                                <option value="COMPLETE">COMPLETE</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4 offset-md-8">
-                            <label class="data-label text-primary fw-bold">STAFF PIN 🔐</label>
-                            <input type="password" id="staff-pin" class="form-control form-control-sm border-primary" placeholder="Enter PIN to Save">
-                        </div>
-                        <div class="col-md-12 text-end mt-2">
-                            <button id="update-btn" onclick="submitUpdate()" class="btn btn-primary btn-sm fw-bold px-4" style="background:#1a3a52; border-color:#1a3a52;">UPDATE</button>
+                <!-- Update Form inside a Collapse (Dropdown Effect) -->
+                <div class="mb-3">
+                    <button class="btn btn-outline-primary btn-sm w-100 fw-bold mb-2 shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#updateFormCollapse">
+                        ⚙️ Update Shipment Information
+                    </button>
+                    <div class="collapse" id="updateFormCollapse">
+                        <div class="bg-light p-3 rounded border" style="background:#f9f9f9 !important;">
+                            <div class="row g-2">
+                                <div class="col-6 col-md-4">
+                                    <label class="data-label">Destination</label>
+                                    <input type="text" id="edit-dest" class="form-control form-control-sm">
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <label class="data-label">Vendor</label>
+                                    <input type="text" id="edit-vendor" class="form-control form-control-sm">
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <label class="data-label">Shipment Type</label>
+                                    <select id="edit-shiptype" class="form-select form-select-sm">
+                                        <option value="LCL">LCL</option>
+                                        <option value="FCL">FCL</option>
+                                        <option value="CONSOLE">CONSOLE</option>
+                                        <option value="CURRIOR">CURRIOR</option>
+                                        <option value="AIR">AIR</option>
+                                    </select>
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <label class="data-label">Loading Facility</label>
+                                    <select id="edit-facility" class="form-select form-select-sm">
+                                        <option value="VN">VN</option>
+                                        <option value="MC">MC</option>
+                                        <option value="VN+MC">VN+MC</option>
+                                    </select>
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <label class="data-label">Invoice/PL</label>
+                                    <select id="edit-invoice" class="form-select form-select-sm">
+                                        <option value="PENDING">PENDING</option>
+                                        <option value="IN-PROGRESS">IN-PROGRESS</option>
+                                        <option value="COMPLETE">COMPLETE</option>
+                                    </select>
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <label class="data-label">Cusdec Status</label>
+                                    <select id="edit-cusdec-status" class="form-select form-select-sm">
+                                        <option value="PENDING">PENDING</option>
+                                        <option value="AUTHORIZED">AUTHORIZED</option>
+                                        <option value="COMPLETE">COMPLETE</option>
+                                        <option value="AMENDED">AMENDED</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label class="data-label">Cusdec No</label>
+                                    <input type="text" id="edit-cusdec-no" class="form-control form-control-sm">
+                                </div>
+                                <div class="col-12">
+                                    <label class="data-label">Note</label>
+                                    <textarea id="edit-note" class="form-control form-control-sm" rows="2" placeholder="Notes..."></textarea>
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <label class="data-label text-danger fw-bold">Cutoff</label>
+                                    <input type="text" id="edit-cutoff" class="form-control form-control-sm border-danger" placeholder="DD/MM HH:MM">
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <label class="data-label fw-bold text-danger">Status</label>
+                                    <select id="edit-loading-status" class="form-select form-select-sm border-danger">
+                                        <option value="PENDING">PENDING</option>
+                                        <option value="IN-PROGRESS">IN-PROGRESS</option>
+                                        <option value="COMPLETE">COMPLETE</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label class="data-label text-primary fw-bold">STAFF PIN 🔐</label>
+                                    <input type="password" id="staff-pin" class="form-control form-control-sm border-primary" placeholder="PIN">
+                                </div>
+                                <div class="col-md-12 text-end mt-2">
+                                    <button id="update-btn" onclick="submitUpdate()" class="btn btn-primary btn-sm fw-bold px-4 w-100" style="background:#1a3a52; border-color:#1a3a52;">UPDATE DATABASE</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
