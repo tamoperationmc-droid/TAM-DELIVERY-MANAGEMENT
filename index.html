@@ -24,25 +24,27 @@
         .bg-progress { background-color: #e6f4ea; color: #1e8e3e; border-color: #81c995; }
         
         #activity-feed { height: 430px; overflow-y: auto; background: #1a1a1a; border-radius: 8px; padding: 10px; border: 1px solid #333; }
-        .feed-item { background: #262626; color: #39ff14; font-family: 'Consolas', monospace; padding: 12px; margin-bottom: 10px; border-left: 4px solid #39ff14; font-size: 0.8rem; }
+        .feed-item { background: #262626; color: #39ff14; font-family: 'Consolas', monospace; padding: 12px; margin-bottom: 10px; border-left: 4px solid #39ff14; font-size: 0.75rem; } /* Adjusted for mobile readability */
         .data-label { color: #70757a; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 2px; display: block;}
 
         /* Fix overlaps and long text in loaded items table */
         #completeReportModal .table {
-            table-layout: fixed !important;
-            width: 100% !important;
+            /* Removed fixed table layout for better responsiveness */
+            /* table-layout: fixed !important; */
+            /* width: 100% !important; */
         }
 
         #completeReportModal table th,
         #completeReportModal table td {
-            word-break: break-word;
-            white-space: normal;
-            overflow-wrap: break-word;
-            line-height: 1.2;
-            vertical-align: top;
-            border: 1px solid #d0d0d0;
-            padding: 8px;
-            font-size: 0.78rem;
+            /* Removed fixed widths and word-break for better responsiveness */
+            /* word-break: break-word; */
+            /* white-space: normal; */
+            /* overflow-wrap: break-word; */
+            /* line-height: 1.2; */
+            /* vertical-align: top; */
+            /* border: 1px solid #d0d0d0; */
+            /* padding: 8px; */
+            /* font-size: 0.78rem; */
         }
 
         #completeReportModal table th { font-size: 0.82rem; }
@@ -324,12 +326,14 @@
             background-color: #ffffff !important; 
             border-color: #d0d0d0 !important; 
             color: #333 !important;
+        }
+
         .dark-mode #newOrderModal .modal-header,
         .dark-mode #completeShipmentsModal .modal-header,
         .dark-mode #completeReportModal .modal-header,
         .dark-mode #itemModal .modal-header { 
-            background-color: #f8f9fa !important; 
-            border-color: #e0e0e0 !important;
+            background-color: #0f1f2e !important; 
+            border-color: #2a3f52 !important;
         }
         
         .dark-mode #newOrderModal .form-control,
@@ -340,55 +344,59 @@
         .dark-mode #completeShipmentsModal .form-select,
         .dark-mode #completeReportModal .form-select,
         .dark-mode #itemModal .form-select { 
-            background-color: #ffffff !important; 
-            border-color: #ddd !important; 
-            color: #1a1a1a !important;
+            background-color: #252d3a !important; 
+            border-color: #3a4a62 !important; 
+            color: #d0d0d0 !important;
         }
         
         .dark-mode #newOrderModal .table,
         .dark-mode #completeShipmentsModal .table,
         .dark-mode #completeReportModal .table,
         .dark-mode #itemModal .table { 
-            color: #1a1a1a !important;
+            color: #d0d0d0 !important;
         }
         
         .dark-mode #newOrderModal .table thead,
         .dark-mode #completeShipmentsModal .table thead,
         .dark-mode #completeReportModal .table thead,
         .dark-mode #itemModal .table thead { 
-            background-color: #f8f9fa !important;
-            color: #1a1a1a !important;
+            background-color: #0f1f2e !important;
+            color: #9fa5ad !important;
         }
         
         .dark-mode #newOrderModal .bg-light,
         .dark-mode #completeShipmentsModal .bg-light,
         .dark-mode #completeReportModal .bg-light,
-        .dark-mode #itemModal .bg-light { 
-            background-color: #f8f9fa !important; 
-            color: #1a1a1a !important;
+        .dark-mode #itemModal .bg-light,
+        .dark-mode .modal-body div[style*="background"],
+        .dark-mode #addItemForm,
+        .dark-mode .alert-info { 
+            background-color: #252d3a !important; 
+            color: #d0d0d0 !important;
         }
         
         .dark-mode #newOrderModal .text-muted,
         .dark-mode #completeShipmentsModal .text-muted,
         .dark-mode #completeReportModal .text-muted,
         .dark-mode #itemModal .text-muted { 
-            color: #6c757d !important;
+            color: #8a96a3 !important;
         }
         
         .dark-mode #newOrderModal .data-label,
         .dark-mode #completeShipmentsModal .data-label,
         .dark-mode #completeReportModal .data-label,
-        .dark-mode #itemModal .data-label { 
-            color: #666 !important;
+        .dark-mode #itemModal .data-label,
+        .dark-mode .modal-body h6[style*="color"] { 
+            color: #6db5d9 !important;
         }
         
         .dark-mode #newOrderModal .badge.bg-light,
         .dark-mode #completeShipmentsModal .badge.bg-light,
         .dark-mode #completeReportModal .badge.bg-light,
         .dark-mode #itemModal .badge.bg-light { 
-            background-color: #f0f0f0 !important; 
-            color: #1a1a1a !important;
-            border-color: #ddd !important;
+            background-color: #2a3f52 !important; 
+            color: #d0d0d0 !important;
+            border-color: #3a4a62 !important;
         }
     </style>
 </head>
@@ -397,7 +405,7 @@
     <div class="container-fluid d-flex justify-content-between align-items-center">
         <h4 class="mb-0">🚛 TAM DELIVERY MANAGEMENT SYSTEM</h4>
         <div class="d-flex align-items-center">
-            <input type="text" id="search-input" class="form-control me-3" style="border-radius:20px; width:250px;" placeholder="Search RO, Vendor..." onkeyup="filterData()">
+            <input type="text" id="search-input" class="form-control me-3 flex-grow-1" style="border-radius:20px; max-width: 250px;" placeholder="Search RO, Vendor..." onkeyup="filterData()">
             <button onclick="openNewOrderModal()" class="btn btn-warning btn-sm fw-bold shadow-sm me-2">➕ New Order</button>
             <button onclick="openCompleteShipmentsModal()" class="btn btn-info btn-sm fw-bold shadow-sm me-2">✅ Complete</button>
             <button onclick="exportToExcel()" class="btn btn-success btn-sm fw-bold shadow-sm me-2">📊 Export Excel</button>
@@ -407,38 +415,129 @@
     </div>
 </div>
 
+<!-- Replace the main container section (lines 410-446) with: -->
+
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-md-8">
-            <div class="section-card">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="text-primary mb-0 fw-bold">⚠️ Active Deliveries</h5>
-                    <div class="d-flex align-items-center">
-                        <small id="last-updated" class="text-muted me-2" style="font-size: 0.7rem;">Last updated: Never</small>
-                        <div id="loading-indicator" class="spinner-border spinner-border-sm text-primary me-2" role="status" style="display: none;">
-                            <span class="visually-hidden">Loading...</span>
+    <!-- TAB NAVIGATION -->
+    <ul class="nav nav-tabs mb-3 flex-nowrap overflow-auto" id="roTabs" role="tablist" style="background:#f5f5f5; padding:10px 15px; border-radius: 8px 8px 0 0;">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-pane" 
+                    type="button" role="tab" aria-controls="all-pane">
+                📋 All Deliveries
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold" id="bdh-tab" data-bs-toggle="tab" data-bs-target="#bdh-pane" 
+                    type="button" role="tab" aria-controls="bdh-pane">
+                🏭 Export Deliveries
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold" id="slh-tab" data-bs-toggle="tab" data-bs-target="#slh-pane" 
+                    type="button" role="tab" aria-controls="slh-pane">
+                🏢 Local Deliveries
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="roTabContent">
+        <!-- ALL DELIVERIES TAB -->
+        <div class="tab-pane fade show active" id="all-pane" role="tabpanel" aria-labelledby="all-tab">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="section-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="text-primary mb-0 fw-bold">⚠️ Active Deliveries (All)</h5>
+                            <div class="d-flex align-items-center">
+                                <small id="last-updated" class="text-muted me-2" style="font-size: 0.7rem;">Last updated: Never</small>
+                                <div id="loading-indicator" class="spinner-border spinner-border-sm text-primary me-2" role="status" style="display: none;">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <span id="pending-badge" class="badge bg-danger fs-6">Loading...</span>
+                            </div>
                         </div>
-                        <span id="pending-badge" class="badge bg-danger fs-6">Loading...</span>
+                        <div id="pending-container">
+                            <div class="text-center text-muted mt-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2">Loading delivery data...</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div id="pending-container">
-                    <div class="text-center text-muted mt-5">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                <div class="col-md-4">
+                    <div class="section-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0 text-primary fw-bold">Notice Board</h5>
+                            <button onclick="manualClearFeed()" class="btn btn-outline-secondary btn-sm" style="font-size: 0.65rem; border-radius: 4px;">Clear</button>
                         </div>
-                        <p class="mt-2">Loading delivery data...</p>
+                        <div id="activity-feed" class="mt-3">
+                            <div id="feed-placeholder" class="text-center text-muted mt-5 small">Getting Updates...</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="section-card">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0 text-primary fw-bold">Notice Board</h5>
-                <button onclick="manualClearFeed()" class="btn btn-outline-secondary btn-sm" style="font-size: 0.65rem; border-radius: 4px;">Clear</button>
-              </div>
-                <div id="activity-feed" class="mt-3">
-                    <div id="feed-placeholder" class="text-center text-muted mt-5 small">Getting Updates...</div>
+
+        <!-- Export Deliveries TAB -->
+        <div class="tab-pane fade" id="bdh-pane" role="tabpanel" aria-labelledby="bdh-tab">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="section-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="text-primary mb-0 fw-bold">🏭 Export Deliveries</h5>
+                            <div class="d-flex align-items-center">
+                                <span id="bdh-badge" class="badge bg-info fs-6">Loading...</span>
+                            </div>
+                        </div>
+                        <div id="bdh-container">
+                            <div class="text-center text-muted mt-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="section-card">
+                        <h5 class="mb-3 text-primary fw-bold">📊 Export Summary</h5>
+                        <div id="bdh-summary" class="small">
+                            <p class="text-muted">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Local Deliveries -->
+        <div class="tab-pane fade" id="slh-pane" role="tabpanel" aria-labelledby="slh-tab">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="section-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="text-primary mb-0 fw-bold">🏢 Local Active Deliveries</h5>
+                            <div class="d-flex align-items-center">
+                                <span id="slh-badge" class="badge bg-info fs-6">Loading...</span>
+                            </div>
+                        </div>
+                        <div id="slh-container">
+                            <div class="text-center text-muted mt-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="section-card">
+                        <h5 class="mb-3 text-primary fw-bold">📊 Local Summary</h5>
+                        <div id="slh-summary" class="small">
+                            <p class="text-muted">Loading...</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -534,7 +633,7 @@
                     <input type="text" id="skuSearch" class="form-control form-control-sm w-50" placeholder="🔍 Search SKU..." onkeyup="filterSKUs()">
                 </div>
                 
-                <div class="table-responsive" style="max-height: 250px;">
+                <div class="table-responsive" style="max-height: 250px;"> <!-- Added table-responsive -->
                     <table class="table table-hover table-sm small mb-0">
                         <thead class="table-light sticky-top">
                             <tr>
@@ -709,7 +808,7 @@
                         <button onclick="addReportItem()" class="btn btn-dark btn-sm" style="font-size: 0.75rem;">➕ Add Item</button>
                     </div>
                     <div class="table-responsive" style="max-height: 300px; border: 1px solid #ddd; border-radius: 8px;">
-                        <table class="table table-hover table-sm small mb-0" style="table-layout: fixed;">
+                        <table class="table table-hover table-sm small mb-0"> <!-- Removed fixed table layout -->
                         <colgroup>
                             <col style="width: 20%;" />
                             <col style="width: 12%;" />
@@ -813,7 +912,7 @@
         const refreshIcon = document.getElementById('refresh-icon');
         const loadingIndicator = document.getElementById('loading-indicator');
         const pendingBadge = document.getElementById('pending-badge');
-
+        
         if (refreshIcon) {
             refreshIcon.classList.add('refresh-spin');
             setTimeout(() => refreshIcon && refreshIcon.classList.remove('refresh-spin'), 650);
@@ -823,7 +922,7 @@
         if (loadingIndicator) loadingIndicator.style.display = 'inline-block';
         if (pendingBadge) pendingBadge.textContent = 'Loading...';
 
-        try {
+        try { 
             const startTime = performance.now();
             const response = await fetch(WEB_APP_URL);
             const data = await response.json();
@@ -838,7 +937,7 @@
                 renderPending(masterData);
             }
 
-            // Only filter if there's a search term active
+            // Only filter if there's a search term active, otherwise render all
             const searchTerm = document.getElementById('search-input').value.trim();
             if (searchTerm) {
                 filterData();
@@ -846,7 +945,7 @@
 
             const endTime = performance.now();
             console.log(`Data refresh took ${Math.round(endTime - startTime)}ms`);
-        } catch (e) {
+        } catch (e) { 
             console.error("Sync Error:", e);
             if (pendingBadge) pendingBadge.textContent = 'Error loading data';
             // Show error notification
@@ -859,7 +958,7 @@
                 const now = new Date();
                 lastUpdated.textContent = `Last updated: ${now.toLocaleTimeString()}`;
             }
-        }
+        } 
     }
 
     function detectAndNotifyChanges(newData) {
@@ -933,53 +1032,36 @@
             }[char]));
         }
 
-        let activeData = data.filter(row => {
+        const activeData = data.filter(row => {
             const status = String(row.STATUS_CLEAN || "").toUpperCase();
             return status === "PENDING" || status === "IN-PROGRESS";
         });
 
-        // Sort by cutoff date (cached date parsing)
         activeData.sort((a, b) => {
-            const cutoffA = a.CUTOFF_VALUE || '';
-            const cutoffB = b.CUTOFF_VALUE || '';
-            if (!cutoffA && !cutoffB) return 0;
-            if (!cutoffA) return 1;
-            if (!cutoffB) return -1;
-
-            // Use cached parsed dates if available
-            if (!a._parsedCutoff) {
-                a._parsedCutoff = parseCutoffDate(cutoffA);
-            }
-            if (!b._parsedCutoff) {
-                b._parsedCutoff = parseCutoffDate(cutoffB);
-            }
-
+            if (!a._parsedCutoff) a._parsedCutoff = parseCutoffDate(a.CUTOFF_VALUE || '');
+            if (!b._parsedCutoff) b._parsedCutoff = parseCutoffDate(b.CUTOFF_VALUE || '');
             return a._parsedCutoff - b._parsedCutoff;
         });
 
-        let activeHtml = ""; let count = 0;
+        // Separate data for tabs
+        const groups = {
+            all: { html: "", count: 0, container: 'pending-container', badge: 'pending-badge' },
+            export: { html: "", count: 0, container: 'bdh-container', badge: 'bdh-badge' },
+            local: { html: "", count: 0, container: 'slh-container', badge: 'slh-badge' }
+        };
+
         const now = new Date();
         const twoDaysFromNow = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
 
         activeData.forEach((row) => {
             const noteText = String(row.NOTE_VALUE || row.note || '').trim();
-            count++;
             const isInProgress = String(row.STATUS_CLEAN || "").toUpperCase() === "IN-PROGRESS";
             const timerBadge = (isInProgress && row.START_TIME_DISPLAY) ? `<span class="timer-badge ms-2">⏱️ Active: ${sanitizeHtml(row.START_TIME_DISPLAY)}</span>` : '';
             const badge = isInProgress ? `<span class="badge bg-success ms-2">IN-PROGRESS</span>${timerBadge}` : '<span class="badge bg-warning text-dark ms-2">WAITING</span>';
-
-            // Check if cutoff is within 2 days (optimized)
-            let isCloseToCutoff = false;
-            if (row.CUTOFF_VALUE && !row._parsedCutoff) {
-                row._parsedCutoff = parseCutoffDate(row.CUTOFF_VALUE);
-            }
-            if (row._parsedCutoff) {
-                isCloseToCutoff = row._parsedCutoff <= twoDaysFromNow && row._parsedCutoff >= now;
-            }
-
+            const isCloseToCutoff = row._parsedCutoff && row._parsedCutoff <= twoDaysFromNow && row._parsedCutoff >= now;
             const glowClass = isCloseToCutoff ? 'glow' : '';
 
-            activeHtml += `
+            const rowHtml = `
             <div class="card p-3 mb-2 shadow-sm ${isInProgress ? 'progress-row' : 'pending-row'} ${glowClass}" onclick="showDetails('${row.RO_VALUE}')">
                 <div class="row align-items-center">
                     <div class="col-md-7">
@@ -1003,15 +1085,41 @@
                 </div>
                 ${noteText ? `<div class="mt-2 small text-muted"><strong>Note:</strong> ${sanitizeHtml(noteText)}</div>` : ''}
             </div>`;
+
+            // Add to "All" group
+            groups.all.html += rowHtml;
+            groups.all.count++;
+
+            // Sort into Export (BD-H) vs Local (SL-H/Other)
+            const roPrefix = String(row.RO_VALUE).toUpperCase();
+            if (roPrefix.includes("BD-H")) {
+                groups.export.html += rowHtml;
+                groups.export.count++;
+            } else {
+                groups.local.html += rowHtml;
+                groups.local.count++;
+            }
         });
 
-        document.getElementById('pending-container').innerHTML = activeHtml || `<div class="text-center text-muted mt-5"><h5>Everything Loaded 🎉</h5></div>`;
-        document.getElementById('pending-badge').innerText = count + " Items Active";
+        // Render all groups
+        Object.values(groups).forEach(g => {
+            const container = document.getElementById(g.container);
+            const badge = document.getElementById(g.badge);
+            if (container) container.innerHTML = g.html || `<div class="text-center text-muted mt-5"><h5>Everything Loaded 🎉</h5></div>`;
+            if (badge) badge.innerText = `${g.count} Items Active`;
+        });
+
+        // Update Side Summaries
+        const updateSummary = (id, count) => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = `<div class="p-2 border rounded bg-light"><strong>Total Active:</strong> ${count}</div>`;
+        };
+        updateSummary('bdh-summary', groups.export.count);
+        updateSummary('slh-summary', groups.local.count);
 
         const endTime = performance.now();
-        console.log(`Render took ${Math.round(endTime - startTime)}ms for ${count} items`);
+        console.log(`Render took ${Math.round(endTime - startTime)}ms for ${groups.all.count} items`);
     }
-
     // Optimized date parsing function
     function parseCutoffDate(str) {
         const match = str.match(/^(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{2})$/);
