@@ -11,7 +11,6 @@
         .nav-header { background: #002f6c; color: white; padding: 15px; }
         .section-card { background: white; border-radius: 12px; padding: 20px; height: 82vh; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
-        /* Mobile Responsive Adjustments */
         @media (max-width: 768px) {
             .section-card { height: auto; min-height: 50vh; margin-bottom: 15px; padding: 12px; }
             .nav-header h4 { font-size: 1rem; }
@@ -32,31 +31,13 @@
         .bg-progress { background-color: #e6f4ea; color: #1e8e3e; border-color: #81c995; }
         
         #activity-feed { height: 430px; overflow-y: auto; background: #1a1a1a; border-radius: 8px; padding: 10px; border: 1px solid #333; }
-        .feed-item { background: #262626; color: #39ff14; font-family: 'Consolas', monospace; padding: 12px; margin-bottom: 10px; border-left: 4px solid #39ff14; font-size: 0.75rem; } /* Adjusted for mobile readability */
+        .feed-item { background: #262626; color: #39ff14; font-family: 'Consolas', monospace; padding: 12px; margin-bottom: 10px; border-left: 4px solid #39ff14; font-size: 0.75rem; }
         .data-label { color: #70757a; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 2px; display: block;}
 
-        /* Fix overlaps and long text in loaded items table */
-        #completeReportModal .table {
-            /* Removed fixed table layout for better responsiveness */
-            /* table-layout: fixed !important; */
-            /* width: 100% !important; */
-        }
-
+        #completeReportModal .table {}
         #completeReportModal table th,
-        #completeReportModal table td {
-            /* Removed fixed widths and word-break for better responsiveness */
-            /* word-break: break-word; */
-            /* white-space: normal; */
-            /* overflow-wrap: break-word; */
-            /* line-height: 1.2; */
-            /* vertical-align: top; */
-            /* border: 1px solid #d0d0d0; */
-            /* padding: 8px; */
-            /* font-size: 0.78rem; */
-        }
-
+        #completeReportModal table td {}
         #completeReportModal table th { font-size: 0.82rem; }
-
         #completeReportModal table th:nth-child(1) { width: 20%; }
         #completeReportModal table th:nth-child(2),
         #completeReportModal table th:nth-child(3) { width: 12%; }
@@ -81,7 +62,13 @@
         .glow { box-shadow: 0 0 20px rgba(255, 193, 7, 0.8), 0 0 40px rgba(255, 193, 7, 0.4); animation: glow-pulse 2s infinite; }
         @keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 20px rgba(255, 193, 7, 0.8), 0 0 40px rgba(255, 193, 7, 0.4); } 50% { box-shadow: 0 0 30px rgba(255, 193, 7, 1), 0 0 60px rgba(255, 193, 7, 0.6); } }
 
-        /* DARK MODE - COMPREHENSIVE THEME */
+        .export-filter-btn {
+            min-width: 88px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
         body.dark-mode { 
             background-color: #1a1a1a !important; 
             color: #d0d0d0 !important; 
@@ -293,7 +280,6 @@
             opacity: 0.5;
         }
 
-        /* FOOTER STYLING */
         footer { 
             background: #1a3a52; 
             color: white; 
@@ -310,7 +296,6 @@
             border-top-color: #2a3f52; 
         }
 
-        /* MODAL WINDOWS - PROFESSIONAL STYLING */
         .modal-content { 
             background-color: #ffffff !important; 
             color: #333 !important; 
@@ -411,7 +396,7 @@
 <body class="light-mode">
 <div class="nav-header shadow-sm mb-3">
     <div class="container-fluid d-flex justify-content-between align-items-center">
-        <h4 class="mb-0 text-white fw-bold">🚛 TAM DELIVERY MANAGEMENT</h4>
+        <h4 class="mb-0 text-white fw-bold">🚛 TDMS</h4>
         <div class="d-flex align-items-center flex-wrap justify-content-end gap-1">
             <input type="text" id="search-input" class="form-control mb-1 mb-md-0 flex-grow-1" style="border-radius:20px; max-width: 150px; height: 31px; font-size: 0.75rem;" placeholder="Search..." onkeyup="filterData()">
             <button onclick="openNewOrderModal()" class="btn btn-warning btn-sm fw-bold shadow-sm mb-1 mb-md-0">➕ Order</button>
@@ -423,10 +408,7 @@
     </div>
 </div>
 
-<!-- Replace the main container section (lines 410-446) with: -->
-
 <div class="container-fluid">
-    <!-- TAB NAVIGATION -->
     <ul class="nav nav-tabs mb-3 flex-nowrap overflow-auto" id="roTabs" role="tablist" style="background:#f5f5f5; padding:10px 15px; border-radius: 8px 8px 0 0;">
         <li class="nav-item" role="presentation">
             <button class="nav-link active fw-bold" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-pane" 
@@ -437,19 +419,18 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link fw-bold" id="bdh-tab" data-bs-toggle="tab" data-bs-target="#bdh-pane" 
                     type="button" role="tab" aria-controls="bdh-pane">
-                🏭 Exports
+                🏭 Export Deliveries
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link fw-bold" id="slh-tab" data-bs-toggle="tab" data-bs-target="#slh-pane" 
                     type="button" role="tab" aria-controls="slh-pane">
-                🏢 Locals
+                🏢 Local Deliveries
             </button>
         </li>
     </ul>
 
     <div class="tab-content" id="roTabContent">
-        <!-- ALL DELIVERIES TAB -->
         <div class="tab-pane fade show active" id="all-pane" role="tabpanel" aria-labelledby="all-tab">
             <div class="row">
                 <div class="col-md-8">
@@ -488,17 +469,29 @@
             </div>
         </div>
 
-        <!-- Export Deliveries TAB -->
         <div class="tab-pane fade" id="bdh-pane" role="tabpanel" aria-labelledby="bdh-tab">
             <div class="row">
                 <div class="col-md-8">
                     <div class="section-card">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                             <h5 class="text-primary mb-0 fw-bold">🏭 Export Deliveries</h5>
                             <div class="d-flex align-items-center">
                                 <span id="bdh-badge" class="badge bg-info fs-6">Loading...</span>
                             </div>
                         </div>
+
+                        <div class="mb-3">
+                            <div class="small text-muted fw-bold mb-2">FILTER BY SHIPMENT TYPE</div>
+                            <div class="d-flex flex-wrap gap-2" id="export-type-filters">
+                                <button class="btn btn-sm btn-primary export-filter-btn" data-type="ALL" onclick="setExportTypeFilter('ALL')">ALL</button>
+                                <button class="btn btn-sm btn-outline-primary export-filter-btn" data-type="LCL" onclick="setExportTypeFilter('LCL')">LCL</button>
+                                <button class="btn btn-sm btn-outline-primary export-filter-btn" data-type="FCL" onclick="setExportTypeFilter('FCL')">FCL</button>
+                                <button class="btn btn-sm btn-outline-primary export-filter-btn" data-type="CONSOLE" onclick="setExportTypeFilter('CONSOLE')">CONSOLE</button>
+                                <button class="btn btn-sm btn-outline-primary export-filter-btn" data-type="AIR" onclick="setExportTypeFilter('AIR')">AIR</button>
+                                <button class="btn btn-sm btn-outline-primary export-filter-btn" data-type="CURRIOR" onclick="setExportTypeFilter('CURRIOR')">CURRIOR</button>
+                            </div>
+                        </div>
+
                         <div id="bdh-container">
                             <div class="text-center text-muted mt-5">
                                 <div class="spinner-border text-primary" role="status">
@@ -519,7 +512,6 @@
             </div>
         </div>
 
-        <!-- Local Deliveries -->
         <div class="tab-pane fade" id="slh-pane" role="tabpanel" aria-labelledby="slh-tab">
             <div class="row">
                 <div class="col-md-8">
@@ -560,7 +552,6 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <!-- Update Form inside a Collapse (Dropdown Effect) -->
                 <div class="mb-3">
                     <button class="btn btn-outline-primary btn-sm w-100 fw-bold mb-2 shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#updateFormCollapse">
                         ⚙️ Update Shipment Information
@@ -624,7 +615,7 @@
                                     <input type="text" id="edit-cutoff" class="form-control form-control-sm border-danger" placeholder="DD/MM HH:MM">
                                 </div>
                                 <div class="col-6 col-md-4">
-                                    <label class="data-label fw-bold text-danger">Loading Status</label>
+                                    <label class="data-label fw-bold text-danger">Status</label>
                                     <select id="edit-loading-status" class="form-select form-select-sm border-danger">
                                         <option value="PENDING">PENDING</option>
                                         <option value="IN-PROGRESS">IN-PROGRESS</option>
@@ -648,7 +639,7 @@
                     <input type="text" id="skuSearch" class="form-control form-control-sm w-100 w-md-50" placeholder="🔍 Search SKU..." onkeyup="filterSKUs()">
                 </div>
                 
-                <div class="table-responsive" style="max-height: 250px;"> <!-- Added table-responsive -->
+                <div class="table-responsive" style="max-height: 250px;">
                     <table class="table table-hover table-sm small mb-0">
                         <thead class="table-light sticky-top">
                             <tr>
@@ -793,7 +784,6 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
-                <!-- Report Info Section -->
                 <div class="bg-light p-3 rounded mb-4 border" style="border-left: 4px solid #002f6c;">
                     <h6 class="fw-bold text-primary mb-3 small">REPORT DETAILS</h6>
                     <div class="row g-3">
@@ -816,14 +806,13 @@
                     </div>
                 </div>
 
-                <!-- Items Section -->
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <h6 class="fw-bold small text-muted mb-0">LOADED ITEMS</h6>
                         <button onclick="addReportItem()" class="btn btn-dark btn-sm" style="font-size: 0.75rem;">➕ Add Item</button>
                     </div>
                     <div class="table-responsive" style="max-height: 300px; border: 1px solid #ddd; border-radius: 8px;">
-                        <table class="table table-hover table-sm small mb-0"> <!-- Removed fixed table layout -->
+                        <table class="table table-hover table-sm small mb-0">
                         <colgroup>
                             <col style="width: 20%;" />
                             <col style="width: 12%;" />
@@ -849,7 +838,6 @@
                     </div>
                 </div>
 
-                <!-- Add Item Form (Hidden by default) -->
                 <div id="addItemForm" class="border p-3 rounded mb-3" style="background: #f9f9f9; display: none;">
                     <h6 class="fw-bold small text-primary mb-3">ADD NEW ITEM</h6>
                     <div class="row g-2">
@@ -874,7 +862,6 @@
                     </div>
                 </div>
 
-                <!-- Summary Section -->
                 <div class="alert alert-info p-3 mb-3" style="background: #e3f2fd; border-left: 4px solid #2196f3;">
                     <div class="row small">
                         <div class="col-md-3">
@@ -908,11 +895,47 @@
     let stagedSkus = [];
     let currentlyEditingRO = "";
     let isInitialized = false;
+    let currentExportTypeFilter = "ALL";
     
     const itemModal = new bootstrap.Modal(document.getElementById('itemModal'));
     const newOrderModal = new bootstrap.Modal(document.getElementById('newOrderModal'));
     const completeShipmentsModal = new bootstrap.Modal(document.getElementById('completeShipmentsModal'));
     const completeReportModal = new bootstrap.Modal(document.getElementById('completeReportModal'));
+
+    function normalizeShipmentType(type) {
+        return String(type || '').trim().toUpperCase();
+    }
+
+    function setExportTypeFilter(type) {
+        currentExportTypeFilter = normalizeShipmentType(type || 'ALL') || 'ALL';
+        updateExportFilterButtons();
+
+        const searchTerm = document.getElementById('search-input').value.trim();
+        if (searchTerm) {
+            filterData();
+        } else {
+            renderPending(masterData);
+        }
+    }
+
+    function updateExportFilterButtons() {
+        const buttons = document.querySelectorAll('.export-filter-btn');
+        buttons.forEach(btn => {
+            const btnType = normalizeShipmentType(btn.getAttribute('data-type'));
+            if (btnType === currentExportTypeFilter) {
+                btn.classList.remove('btn-outline-primary');
+                btn.classList.add('btn-primary');
+            } else {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline-primary');
+            }
+        });
+    }
+
+    function matchesExportType(rowType) {
+        if (currentExportTypeFilter === 'ALL') return true;
+        return normalizeShipmentType(rowType) === currentExportTypeFilter;
+    }
 
     function toggleDarkMode() {
         document.body.classList.toggle('dark-mode');
@@ -933,7 +956,6 @@
             setTimeout(() => refreshIcon && refreshIcon.classList.remove('refresh-spin'), 650);
         }
 
-        // Show loading indicator
         if (loadingIndicator) loadingIndicator.style.display = 'inline-block';
         if (pendingBadge) pendingBadge.textContent = 'Loading...';
 
@@ -943,7 +965,6 @@
             const data = await response.json();
             const newData = data.opsData.rows || [];
 
-            // Only update if data actually changed or it's the first load
             const dataChanged = !isInitialized || JSON.stringify(newData) !== JSON.stringify(masterData);
 
             if (dataChanged) {
@@ -952,7 +973,6 @@
                 renderPending(masterData);
             }
 
-            // Only filter if there's a search term active, otherwise render all
             const searchTerm = document.getElementById('search-input').value.trim();
             if (searchTerm) {
                 filterData();
@@ -963,10 +983,8 @@
         } catch (e) { 
             console.error("Sync Error:", e);
             if (pendingBadge) pendingBadge.textContent = 'Error loading data';
-            // Show error notification
             pushMobileNotification('SYSTEM', 'ERROR', '', 'Failed to load data. Check connection.', '#dc3545');
         } finally {
-            // Hide loading indicator and update timestamp
             if (loadingIndicator) loadingIndicator.style.display = 'none';
             const lastUpdated = document.getElementById('last-updated');
             if (lastUpdated) {
@@ -977,7 +995,6 @@
     }
 
     function detectAndNotifyChanges(newData) {
-        // Track specific keys from the returned opsData object
         const trackableKeys = { 
             "COL_8": "CUSDEC NO", 
             "STATUS_CLEAN": "LOADING STATUS", 
@@ -1058,11 +1075,21 @@
             return a._parsedCutoff - b._parsedCutoff;
         });
 
-        // Separate data for tabs
         const groups = {
             all: { html: "", count: 0, container: 'pending-container', badge: 'pending-badge' },
             export: { html: "", count: 0, container: 'bdh-container', badge: 'bdh-badge' },
             local: { html: "", count: 0, container: 'slh-container', badge: 'slh-badge' }
+        };
+
+        let exportTotalCount = 0;
+        let exportFilteredCount = 0;
+        const exportTypeCounts = {
+            ALL: 0,
+            LCL: 0,
+            FCL: 0,
+            CONSOLE: 0,
+            AIR: 0,
+            CURRIOR: 0
         };
 
         const now = new Date();
@@ -1075,6 +1102,7 @@
             const badge = isInProgress ? `<span class="badge bg-success ms-2">IN-PROGRESS</span>${timerBadge}` : '<span class="badge bg-warning text-dark ms-2">WAITING</span>';
             const isCloseToCutoff = row._parsedCutoff && row._parsedCutoff <= twoDaysFromNow && row._parsedCutoff >= now;
             const glowClass = isCloseToCutoff ? 'glow' : '';
+            const rowType = normalizeShipmentType(row.TYPE_VALUE || 'LOCAL');
 
             const rowHtml = `
             <div class="card p-3 mb-2 shadow-sm ${isInProgress ? 'progress-row' : 'pending-row'} ${glowClass}" onclick="showDetails('${row.RO_VALUE}')">
@@ -1082,7 +1110,7 @@
                     <div class="col-md-7">
                         <div class="d-flex justify-content-between align-items-start mb-1">
                             <h6 class="text-dark fw-bold">${row.RO_VALUE} | ${row.VENDOR_VALUE} ${badge}</h6>
-                            ${row.RO_VALUE.startsWith('BD') && row.TYPE_VALUE !== 'currior' ? `<button class="btn btn-link p-0" onclick="event.stopPropagation(); window.open('https://tms.myroadrunner.lk/', '_blank')" style="font-size: 0.7rem;">🚛 Request Vehicle</button>` : ''}
+                            ${String(row.RO_VALUE || '').startsWith('BD') && normalizeShipmentType(row.TYPE_VALUE) !== 'CURRIOR' ? `<button class="btn btn-link p-0" onclick="event.stopPropagation(); window.open('https://tms.myroadrunner.lk/', '_blank')" style="font-size: 0.7rem;">🚛 Request Vehicle</button>` : ''}
                         </div>
                         <div class="mb-2">
                             <span class="facility-tag me-2">🏭 ${row.FACILITY_VALUE || 'VN'}</span>
@@ -1101,22 +1129,28 @@
                 ${noteText ? `<div class="mt-2 small text-muted"><strong>Note:</strong> ${sanitizeHtml(noteText)}</div>` : ''}
             </div>`;
 
-            // Add to "All" group
             groups.all.html += rowHtml;
             groups.all.count++;
 
-            // Sort into Export (BD-H) vs Local (SL-H/Other)
             const roPrefix = String(row.RO_VALUE).toUpperCase();
             if (roPrefix.includes("BD-H")) {
-                groups.export.html += rowHtml;
-                groups.export.count++;
+                exportTotalCount++;
+                exportTypeCounts.ALL++;
+                if (exportTypeCounts.hasOwnProperty(rowType)) {
+                    exportTypeCounts[rowType]++;
+                }
+
+                if (matchesExportType(row.TYPE_VALUE)) {
+                    groups.export.html += rowHtml;
+                    groups.export.count++;
+                    exportFilteredCount++;
+                }
             } else {
                 groups.local.html += rowHtml;
                 groups.local.count++;
             }
         });
 
-        // Render all groups
         Object.values(groups).forEach(g => {
             const container = document.getElementById(g.container);
             const badge = document.getElementById(g.badge);
@@ -1124,18 +1158,35 @@
             if (badge) badge.innerText = `${g.count} Items Active`;
         });
 
-        // Update Side Summaries
-        const updateSummary = (id, count) => {
+        const updateSummary = (id, html) => {
             const el = document.getElementById(id);
-            if (el) el.innerHTML = `<div class="p-2 border rounded bg-light"><strong>Total Active:</strong> ${count}</div>`;
+            if (el) el.innerHTML = html;
         };
-        updateSummary('bdh-summary', groups.export.count);
-        updateSummary('slh-summary', groups.local.count);
+
+        updateSummary(
+            'bdh-summary',
+            `
+            <div class="p-2 border rounded bg-light mb-2"><strong>Total Export Active:</strong> ${exportTotalCount}</div>
+            <div class="p-2 border rounded bg-light mb-2"><strong>Showing:</strong> ${currentExportTypeFilter}</div>
+            <div class="p-2 border rounded bg-light mb-2"><strong>Filtered Count:</strong> ${exportFilteredCount}</div>
+            <div class="small mt-3">
+                <div><strong>LCL:</strong> ${exportTypeCounts.LCL}</div>
+                <div><strong>FCL:</strong> ${exportTypeCounts.FCL}</div>
+                <div><strong>CONSOLE:</strong> ${exportTypeCounts.CONSOLE}</div>
+                <div><strong>AIR:</strong> ${exportTypeCounts.AIR}</div>
+                <div><strong>CURRIOR:</strong> ${exportTypeCounts.CURRIOR}</div>
+            </div>
+            `
+        );
+
+        updateSummary('slh-summary', `<div class="p-2 border rounded bg-light"><strong>Total Active:</strong> ${groups.local.count}</div>`);
+
+        updateExportFilterButtons();
 
         const endTime = performance.now();
         console.log(`Render took ${Math.round(endTime - startTime)}ms for ${groups.all.count} items`);
     }
-    // Optimized date parsing function
+
     function parseCutoffDate(str) {
         const match = str.match(/^(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{2})$/);
         if (!match) return new Date(0);
@@ -1148,7 +1199,6 @@
     function getStatusClass(s) {
         if (!s) return 'bg-pending';
         const status = s.toUpperCase();
-        // Updated logic to match multiple positive statuses
         return (status.includes('COMPLETE') || status.includes('OK') || status.includes('AUTH') || status.includes('AUTHORIZED')) ? 'bg-progress' : 'bg-pending';
     }
 
@@ -1303,28 +1353,23 @@
         }
     }
 
-    // Report Modal Variables
     let reportItems = [];
 
     function showCompleteShipmentReport(roNumber) {
         const row = masterData.find(item => String(item.RO_VALUE) === String(roNumber));
-        reportItems = []; // Clear existing items
+        reportItems = [];
         
-        // Clear all form fields first
         document.getElementById('report-input-ro').value = '';
         document.getElementById('report-input-vendor').value = '';
         document.getElementById('report-input-start').value = '';
         document.getElementById('report-input-end').value = '';
         
-        // Helper function to convert database time to datetime-local format
         const convertToDateTimeLocal = (timeStr) => {
             if (!timeStr) return '';
             try {
-                // Try to parse the time string and convert to YYYY-MM-DDTHH:MM format
                 const date = new Date(timeStr);
                 if (isNaN(date.getTime())) return '';
                 
-                // Format as YYYY-MM-DDTHH:MM for datetime-local input
                 const year = date.getFullYear();
                 const month = String(date.getMonth() + 1).padStart(2, '0');
                 const day = String(date.getDate()).padStart(2, '0');
@@ -1338,15 +1383,11 @@
         };
         
         if (row) {
-            // Populate input fields from master data
             document.getElementById('report-input-ro').value = row.RO_VALUE || '';
             document.getElementById('report-input-vendor').value = row.VENDOR_VALUE || '';
-            
-            // Populate loading times from database and convert to datetime-local format
             document.getElementById('report-input-start').value = convertToDateTimeLocal(row.START_TIME_DISPLAY);
             document.getElementById('report-input-end').value = convertToDateTimeLocal(row.COMPLETE_TIME_DISPLAY);
             
-            // Populate items from database
             if (row.ITEMS && row.ITEMS.length > 0) {
                 row.ITEMS.forEach(item => {
                     reportItems.push({
@@ -1430,13 +1471,12 @@
         document.getElementById('report-total-qty').innerText = totalQty;
         document.getElementById('report-total-ctns').innerText = totalCtns;
         
-        // Calculate duration
         const startInput = document.getElementById('report-input-start').value;
         const endInput = document.getElementById('report-input-end').value;
         if (startInput && endInput) {
             const start = new Date(startInput);
             const end = new Date(endInput);
-            const diff = (end - start) / 1000; // seconds
+            const diff = (end - start) / 1000;
             const hours = Math.floor(diff / 3600);
             const mins = Math.floor((diff % 3600) / 60);
             document.getElementById('report-total-duration').innerText = `${hours}h ${mins}m`;
@@ -1453,7 +1493,6 @@
         
         if (reportItems.length === 0) { alert("Please add items to the report"); return; }
         
-        // Format dates
         const formatDateTime = (dateStr) => {
             if (!dateStr) return '-';
             const date = new Date(dateStr);
@@ -1463,7 +1502,6 @@
         const startTime = formatDateTime(startValue);
         const endTime = formatDateTime(endValue);
         
-        // Calculate duration
         let duration = '-';
         if (startValue && endValue) {
             const start = new Date(startValue);
@@ -1474,7 +1512,6 @@
             duration = `${hours}h ${mins}m`;
         }
         
-        // Generate items rows
         let itemsRows = '';
         let totalQty = 0, totalCtns = 0;
         reportItems.forEach(item => {
@@ -1502,7 +1539,6 @@
             year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
         });
         
-        // Create HTML for PDF
         const htmlContent = `
         <!DOCTYPE html>
         <html>
@@ -1596,7 +1632,6 @@
         </body>
         </html>`;
         
-        // Use html2pdf to generate PDF
         const options = {
             margin: 5,
             filename: `TAM_Report_${roValue}_${new Date().toISOString().split('T')[0]}.pdf`,
@@ -1682,7 +1717,6 @@
     function exportToExcel() {
         if (masterData.length === 0) { alert("No data to export"); return; }
         
-        // Create detailed export with all items
         const detailedData = [];
         masterData.forEach(r => {
             if (r.ITEMS && r.ITEMS.length > 0) {
@@ -1760,7 +1794,6 @@
             }
         });
         
-        // Create summary sheet
         const summaryData = masterData.map(r => ({
             "RO Number": r.RO_VALUE,
             "Vendor": r.VENDOR_VALUE,
@@ -1780,9 +1813,6 @@
         const ws1 = XLSX.utils.json_to_sheet(summaryData);
         const ws2 = XLSX.utils.json_to_sheet(detailedData);
         
-        // Note: Font styling in XLSX is limited and may not work in all Excel versions
-        // Consider using a different approach for styling if needed
-        
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws1, "Summary");
         XLSX.utils.book_append_sheet(wb, ws2, "Detailed_with_Items");
@@ -1794,8 +1824,9 @@
     window.onload = () => {
         const savedTheme = localStorage.getItem('TAM_THEME');
         if (savedTheme === 'dark') document.body.classList.add('dark-mode');
+        updateExportFilterButtons();
         refreshAll();
-        setInterval(refreshAll, 300000); // Auto-refresh every 5 minutes (increased from 1 minute)
+        setInterval(refreshAll, 300000);
     };
 </script>
 
