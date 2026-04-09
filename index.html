@@ -419,7 +419,7 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link fw-bold" id="bdh-tab" data-bs-toggle="tab" data-bs-target="#bdh-pane" 
                     type="button" role="tab" aria-controls="bdh-pane">
-                🏭 Export Deliveries
+                🏭 Export
             </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -488,7 +488,7 @@
                                 <button class="btn btn-sm btn-outline-primary export-filter-btn" data-type="FCL" onclick="setExportTypeFilter('FCL')">FCL</button>
                                 <button class="btn btn-sm btn-outline-primary export-filter-btn" data-type="CONSOLE" onclick="setExportTypeFilter('CONSOLE')">CONSOLE</button>
                                 <button class="btn btn-sm btn-outline-primary export-filter-btn" data-type="AIR" onclick="setExportTypeFilter('AIR')">AIR</button>
-                                <button class="btn btn-sm btn-outline-primary export-filter-btn" data-type="CURRIOR" onclick="setExportTypeFilter('CURRIOR')">CURRIOR</button>
+                                <button class="btn btn-sm btn-outline-primary export-filter-btn" data-type="CURRIOR" onclick="setExportTypeFilter('COURIER')">COURIER</button>
                             </div>
                         </div>
 
@@ -573,7 +573,7 @@
                                         <option value="LCL">LCL</option>
                                         <option value="FCL">FCL</option>
                                         <option value="CONSOLE">CONSOLE</option>
-                                        <option value="CURRIOR">CURRIOR</option>
+                                        <option value="COURIER">COURIER</option>
                                         <option value="AIR">AIR</option>
                                     </select>
                                 </div>
@@ -1089,7 +1089,7 @@
             FCL: 0,
             CONSOLE: 0,
             AIR: 0,
-            CURRIOR: 0
+            COURIER: 0
         };
 
         const now = new Date();
@@ -1174,7 +1174,7 @@
                 <div><strong>FCL:</strong> ${exportTypeCounts.FCL}</div>
                 <div><strong>CONSOLE:</strong> ${exportTypeCounts.CONSOLE}</div>
                 <div><strong>AIR:</strong> ${exportTypeCounts.AIR}</div>
-                <div><strong>CURRIOR:</strong> ${exportTypeCounts.CURRIOR}</div>
+                <div><strong>COURIER:</strong> ${exportTypeCounts.COURIER}</div>
             </div>
             `
         );
