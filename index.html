@@ -428,6 +428,12 @@
                 🏢 Local Deliveries
             </button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold" id="drive-tab" data-bs-toggle="tab" data-bs-target="#drive-pane"
+                    type="button" role="tab" aria-controls="drive-pane">
+                📁 Shiping Docs
+            </button>
+        </li>
     </ul>
 
     <div class="tab-content" id="roTabContent">
@@ -537,6 +543,73 @@
                         <div id="slh-summary" class="small">
                             <p class="text-muted">Loading...</p>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="drive-pane" role="tabpanel" aria-labelledby="drive-tab">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="section-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                            <div>
+                                <h5 class="text-primary mb-0 fw-bold">📁 Google Drive Documents</h5>
+                                <small class="text-muted">Browse Export Docs and RO folders.</small>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="setDriveFolder('Export Docs')">Export Docs</button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="setDriveFolder('RO')">RO</button>
+                                <input id="drive-search-input" type="text" class="form-control form-control-sm" style="max-width:240px;" placeholder="Search files..." onkeyup="onDriveSearch()">
+                                <button class="btn btn-sm btn-success" onclick="loadDriveTabFiles(driveFolderName)">Refresh</button>
+                                <button class="btn btn-sm btn-outline-info" onclick="testDriveBackend()">Check connection</button>
+                            </div>
+                        </div>
+                        <div id="drive-status-message" class="small text-muted mt-2">Backend URL: <span id="drive-backend-url"></span></div>
+                        <div id="drive-files-container">
+                            <div class="text-center text-muted mt-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2">Loading Drive files...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="section-card mb-3">
+                        <h6 class="fw-bold mb-3">Upload File</h6>
+                        <div class="mb-3">
+                            <label class="data-label">Folder</label>
+                            <select id="drive-upload-folder" class="form-select form-select-sm">
+                                <option value="Export Docs">Export Docs</option>
+                                <option value="RO">RO</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="data-label">Choose file</label>
+                            <input id="drive-upload-file" type="file" class="form-control form-control-sm" accept=".pdf, .xlsx, .xls, .csv, .docx, .doc">
+                        </div>
+                        <button class="btn btn-primary btn-sm w-100" onclick="uploadDriveFile()">Upload to Drive</button>
+                    </div>
+                    <div class="section-card">
+                        <h6 class="fw-bold mb-3">Share / Download</h6>
+                        <div class="mb-3">
+                            <label class="data-label">Selected file ID</label>
+                            <input id="drive-share-file-id" type="text" class="form-control form-control-sm" placeholder="Paste file ID" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="data-label">Email to share</label>
+                            <input id="drive-share-email" type="email" class="form-control form-control-sm" placeholder="user@example.com" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="data-label">Role</label>
+                            <select id="drive-share-role" class="form-select form-select-sm">
+                                <option value="viewer">Viewer</option>
+                                <option value="editor">Editor</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-info btn-sm w-100 mb-2" onclick="shareDriveFile()">Share File</button>
+                        <button class="btn btn-outline-secondary btn-sm w-100" onclick="downloadSelectedDriveFile()">Download File</button>
                     </div>
                 </div>
             </div>
@@ -780,7 +853,7 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content shadow-lg" style="border-radius: 15px;">
             <div class="modal-header bg-primary text-white" style="border-radius: 15px 15px 0 0;">
-                <h5 class="modal-title">📋 Professional Shipment Report</h5>
+                <h5 class="modal-title">📋 Shipment Report</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
@@ -889,7 +962,45 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz8YKx9m-ljoHOZKCDues7wGvZWkpCZwuzL9tmVNorFNUBZjzpLH2PPx7YoPkzwW-5X/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyf1ctQmnoz_-sScqQE37GQ03mjJOc2Kj9W-UDqjMLRsXjBzzvKBS-arJ6dDNBs9RWi/exec";
+
+
+    // JSONP helper: required when this HTML is opened from local D:/ file path.
+    // Normal fetch() is blocked by browser CORS for Google Apps Script from local files.
+    function appsScriptJsonp(params = {}) {
+        return new Promise((resolve, reject) => {
+            const callbackName = 'jsonpCallback_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+            params.callback = callbackName;
+            const query = new URLSearchParams(params).toString();
+            const script = document.createElement('script');
+            let done = false;
+
+            window[callbackName] = function(data) {
+                done = true;
+                try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+                if (script.parentNode) script.parentNode.removeChild(script);
+                resolve(data);
+            };
+
+            script.onerror = function() {
+                if (done) return;
+                try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+                if (script.parentNode) script.parentNode.removeChild(script);
+                reject(new Error('Connection failed. Check Web App URL and deployment access.'));
+            };
+
+            script.src = WEB_APP_URL + '?' + query + '&_=' + Date.now();
+            document.body.appendChild(script);
+
+            setTimeout(() => {
+                if (!done) {
+                    try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+                    if (script.parentNode) script.parentNode.removeChild(script);
+                    reject(new Error('Request timeout. Check Web App deployment permission.'));
+                }
+            }, 30000);
+        });
+    }
     let masterData = [];
     let previousDataMap = new Map(); 
     let stagedSkus = [];
@@ -937,9 +1048,208 @@
         return normalizeShipmentType(rowType) === currentExportTypeFilter;
     }
 
+    let driveData = [];
+    let driveFolderName = 'Export Docs';
+    let driveSearchTerm = '';
+
+    const DRIVE_FOLDER_MAP = {
+        'Export Docs': { id: '', name: 'Export Docs' },
+        'RO': { id: '', name: 'RO' }
+    };
+
     function toggleDarkMode() {
         document.body.classList.toggle('dark-mode');
         localStorage.setItem('TAM_THEME', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    }
+
+    function setDriveFolder(folderName) {
+        driveFolderName = folderName;
+        document.getElementById('drive-upload-folder').value = folderName;
+        updateDriveFolderButtons(folderName);
+        loadDriveTabFiles(folderName);
+    }
+
+    function updateDriveFolderButtons(folderName) {
+        const buttons = document.querySelectorAll('#drive-pane .btn-outline-secondary, #drive-pane .btn-secondary');
+        buttons.forEach(btn => {
+            if (btn.textContent.trim() === folderName) {
+                btn.classList.remove('btn-outline-secondary');
+                btn.classList.add('btn-secondary');
+            } else if (btn.textContent.trim() === 'Export Docs' || btn.textContent.trim() === 'RO') {
+                btn.classList.remove('btn-secondary');
+                btn.classList.add('btn-outline-secondary');
+            }
+        });
+    }
+
+    function onDriveSearch() {
+        driveSearchTerm = document.getElementById('drive-search-input').value.trim();
+        renderDriveFiles(driveData);
+    }
+
+    async function loadDriveTabFiles(folderName) {
+        const container = document.getElementById('drive-files-container');
+        if (!container) return;
+        container.innerHTML = `<div class="text-center text-muted mt-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Loading Drive files...</p></div>`;
+        driveFolderName = folderName || driveFolderName;
+        document.getElementById('drive-search-input').value = driveSearchTerm;
+        try {
+            const files = await fetchDriveFiles(driveFolderName);
+            driveData = Array.isArray(files) ? files : [];
+            renderDriveFiles(driveData);
+        } catch (error) {
+            console.error('Drive tab load error', error);
+            container.innerHTML = `<div class="text-danger text-center mt-5">Unable to load Drive files right now.</div>`;
+        }
+    }
+
+    async function fetchDriveFiles(folderName) {
+        try {
+            const actionName = folderName === 'RO' ? 'getROFiles' : 'getExportDocs';
+            const result = await appsScriptJsonp({ action: actionName });
+
+            if (result && result.status === 'error') {
+                alert(result.message || 'Drive fetch failed');
+                return [];
+            }
+            if (Array.isArray(result)) return result;
+            if (result && result.filesData && Array.isArray(result.filesData)) return result.filesData;
+            if (result && result.results && Array.isArray(result.results)) return result.results;
+            return [];
+        } catch (error) {
+            console.error('Drive fetch error', error);
+            alert('Failed to load Drive files: ' + error.message);
+            return [];
+        }
+    }
+
+    function renderDriveFiles(files) {
+        const container = document.getElementById('drive-files-container');
+        if (!container) return;
+        files = Array.isArray(files) ? files : [];
+        const query = driveSearchTerm.toLowerCase();
+        const visible = files.filter(file => {
+            if (!query) return true;
+            return String(file.name || '').toLowerCase().includes(query) || String(file.folder || '').toLowerCase().includes(query);
+        });
+
+        if (visible.length === 0) {
+            container.innerHTML = `<div class="text-center text-muted mt-5"><p>No files found.</p></div>`;
+            return;
+        }
+
+        container.innerHTML = visible.map(file => {
+            const downloadLink = `https://drive.google.com/uc?export=download&id=${encodeURIComponent(file.id)}`;
+            return `
+                <div class="card mb-2 p-3">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                        <div>
+                            <div class="fw-bold">${file.name}</div>
+                            <div class="text-muted small">${file.folder || driveFolderName} • ${file.mimeType || ''}</div>
+                            <div class="text-muted small">Created: ${file.dateText || ''}</div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button class="btn btn-sm btn-outline-primary" onclick="window.open('${file.url}', '_blank')">Open</button>
+                            <button class="btn btn-sm btn-outline-success" onclick="window.open('${downloadLink}', '_blank')">Download</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="selectDriveFile('${file.id}')">Select</button>
+                        </div>
+                    </div>
+                </div>`;
+        }).join('');
+    }
+
+    function selectDriveFile(fileId) {
+        document.getElementById('drive-share-file-id').value = fileId;
+        const selected = driveData.find(file => file.id === fileId);
+        if (selected) {
+            const container = document.getElementById('drive-files-container');
+            if (container) container.scrollTop = 0;
+        }
+    }
+
+    function downloadSelectedDriveFile() {
+        const fileId = document.getElementById('drive-share-file-id').value.trim();
+        if (!fileId) { alert('Enter a file ID to download.'); return; }
+        const downloadLink = `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`;
+        window.open(downloadLink, '_blank');
+    }
+
+    async function uploadDriveFile() {
+        const uploadInput = document.getElementById('drive-upload-file');
+        const file = uploadInput.files[0];
+        if (!file) { alert('Choose a file to upload.'); return; }
+        const folderName = document.getElementById('drive-upload-folder').value;
+        const reader = new FileReader();
+        reader.onload = async function(event) {
+            const base64Data = event.target.result.split(',')[1];
+            const payload = new URLSearchParams();
+            payload.append('action', 'uploadFile');
+            payload.append('folderName', folderName);
+            payload.append('fileName', file.name);
+            payload.append('mimeType', file.type || 'application/octet-stream');
+            payload.append('base64Data', base64Data);
+            try {
+                const response = await fetch(WEB_APP_URL, { method: 'POST', body: payload });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    alert('Upload successful');
+                    uploadInput.value = '';
+                    loadDriveTabFiles(folderName);
+                } else {
+                    alert(result.message || 'Upload failed');
+                }
+            } catch (error) {
+                console.error('Upload error', error);
+                alert('Upload failed. Because this page is opened from local D:/ file, browser may block upload. Host the HTML or upload from Apps Script web app for file uploads.');
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function shareDriveFile() {
+        const fileId = document.getElementById('drive-share-file-id').value.trim();
+        const email = document.getElementById('drive-share-email').value.trim();
+        const role = document.getElementById('drive-share-role').value;
+        if (!fileId || !email) { alert('File ID and email are required.'); return; }
+        const payload = new URLSearchParams();
+        payload.append('action', 'shareFile');
+        payload.append('fileId', fileId);
+        payload.append('email', email);
+        payload.append('role', role);
+        try {
+            const result = await appsScriptJsonp(Object.fromEntries(payload));
+            if (result.status === 'success') {
+                alert('File shared successfully');
+            } else {
+                alert(result.message || 'Share failed');
+            }
+        } catch (error) {
+            console.error('Share error', error);
+            alert('Share failed. Check connection.');
+        }
+    }
+
+    async function testDriveBackend() {
+        const statusEl = document.getElementById('drive-status-message');
+        if (statusEl) {
+            statusEl.className = 'small text-muted mt-2';
+            statusEl.textContent = 'Checking backend connection...';
+        }
+        try {
+            const result = await appsScriptJsonp({ action: 'getExportDocs' });
+            if (result && result.status === 'error') throw new Error(result.message || 'Backend error');
+            if (!Array.isArray(result)) throw new Error('Unexpected response format');
+            if (statusEl) {
+                statusEl.className = 'small text-success mt-2';
+                statusEl.textContent = `Backend live: returned ${result.length} files from Drive.`;
+            }
+        } catch (error) {
+            console.error('Drive backend test failed', error);
+            if (statusEl) {
+                statusEl.className = 'small text-danger mt-2';
+                statusEl.textContent = `Backend test failed: ${error.message}`;
+            }
+        }
     }
 
     function manualClearFeed() {
@@ -961,9 +1271,9 @@
 
         try { 
             const startTime = performance.now();
-            const response = await fetch(WEB_APP_URL);
-            const data = await response.json();
-            const newData = data.opsData.rows || [];
+            const data = await appsScriptJsonp();
+            if (data && data.status === 'error') throw new Error(data.message || 'Backend error');
+            const newData = (data.opsData && data.opsData.rows) ? data.opsData.rows : [];
 
             const dataChanged = !isInitialized || JSON.stringify(newData) !== JSON.stringify(masterData);
 
@@ -1282,8 +1592,7 @@
         });
 
         try {
-            const r = await fetch(`${WEB_APP_URL}?${params.toString()}`);
-            const res = await r.json();
+            const res = await appsScriptJsonp(Object.fromEntries(params));
             if (res.status === "success") { 
                 itemModal.hide(); 
                 refreshAll(); 
@@ -1693,8 +2002,7 @@
         };
 
         try {
-            const r = await fetch(`${WEB_APP_URL}?${new URLSearchParams(payload).toString()}`);
-            const res = await r.json();
+            const res = await appsScriptJsonp(payload);
             if(res.status === "success") { 
                 newOrderModal.hide(); 
                 ["new-ro", "new-vendor", "new-dest", "new-order-pin"].forEach(id => document.getElementById(id).value = "");
@@ -1825,7 +2133,14 @@
         const savedTheme = localStorage.getItem('TAM_THEME');
         if (savedTheme === 'dark') document.body.classList.add('dark-mode');
         updateExportFilterButtons();
+        updateDriveFolderButtons(driveFolderName);
         refreshAll();
+        const driveTab = document.getElementById('drive-tab');
+        if (driveTab) {
+            driveTab.addEventListener('shown.bs.tab', () => loadDriveTabFiles(driveFolderName));
+        }
+        const backendUrlEl = document.getElementById('drive-backend-url');
+        if (backendUrlEl) backendUrlEl.textContent = WEB_APP_URL;
         setInterval(refreshAll, 300000);
     };
 </script>
