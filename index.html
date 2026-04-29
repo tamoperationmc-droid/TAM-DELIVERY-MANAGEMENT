@@ -431,7 +431,7 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link fw-bold" id="drive-tab" data-bs-toggle="tab" data-bs-target="#drive-pane"
                     type="button" role="tab" aria-controls="drive-pane">
-                📁 Shiping Docs
+                📁 Drive Docs
             </button>
         </li>
     </ul>
@@ -853,7 +853,7 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content shadow-lg" style="border-radius: 15px;">
             <div class="modal-header bg-primary text-white" style="border-radius: 15px 15px 0 0;">
-                <h5 class="modal-title">📋 Shipment Report</h5>
+                <h5 class="modal-title">📋 Professional Shipment Report</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
@@ -963,44 +963,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyf1ctQmnoz_-sScqQE37GQ03mjJOc2Kj9W-UDqjMLRsXjBzzvKBS-arJ6dDNBs9RWi/exec";
-
-
-    // JSONP helper: required when this HTML is opened from local D:/ file path.
-    // Normal fetch() is blocked by browser CORS for Google Apps Script from local files.
-    function appsScriptJsonp(params = {}) {
-        return new Promise((resolve, reject) => {
-            const callbackName = 'jsonpCallback_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
-            params.callback = callbackName;
-            const query = new URLSearchParams(params).toString();
-            const script = document.createElement('script');
-            let done = false;
-
-            window[callbackName] = function(data) {
-                done = true;
-                try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
-                if (script.parentNode) script.parentNode.removeChild(script);
-                resolve(data);
-            };
-
-            script.onerror = function() {
-                if (done) return;
-                try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
-                if (script.parentNode) script.parentNode.removeChild(script);
-                reject(new Error('Connection failed. Check Web App URL and deployment access.'));
-            };
-
-            script.src = WEB_APP_URL + '?' + query + '&_=' + Date.now();
-            document.body.appendChild(script);
-
-            setTimeout(() => {
-                if (!done) {
-                    try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
-                    if (script.parentNode) script.parentNode.removeChild(script);
-                    reject(new Error('Request timeout. Check Web App deployment permission.'));
-                }
-            }, 30000);
-        });
-    }
     let masterData = [];
     let previousDataMap = new Map(); 
     let stagedSkus = [];
@@ -1012,6 +974,42 @@
     const newOrderModal = new bootstrap.Modal(document.getElementById('newOrderModal'));
     const completeShipmentsModal = new bootstrap.Modal(document.getElementById('completeShipmentsModal'));
     const completeReportModal = new bootstrap.Modal(document.getElementById('completeReportModal'));
+
+    // Apps Script JSONP request helper.
+    // This prevents CORS/Failed to fetch errors when the page is hosted on GitHub Pages or opened locally.
+    function jsonpRequest(params = {}) {
+        return new Promise((resolve, reject) => {
+            const callbackName = 'tdms_cb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+            const queryParams = new URLSearchParams(params);
+            queryParams.set('callback', callbackName);
+
+            const script = document.createElement('script');
+            const timeout = setTimeout(() => {
+                cleanup();
+                reject(new Error('Request timed out'));
+            }, 30000);
+
+            function cleanup() {
+                clearTimeout(timeout);
+                try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+                if (script.parentNode) script.parentNode.removeChild(script);
+            }
+
+            window[callbackName] = function(data) {
+                cleanup();
+                resolve(data);
+            };
+
+            script.onerror = function() {
+                cleanup();
+                reject(new Error('JSONP request failed. Check Apps Script deployment and access permissions.'));
+            };
+
+            script.src = WEB_APP_URL + '?' + queryParams.toString();
+            document.body.appendChild(script);
+        });
+    }
+
 
     function normalizeShipmentType(type) {
         return String(type || '').trim().toUpperCase();
@@ -1106,19 +1104,19 @@
     async function fetchDriveFiles(folderName) {
         try {
             const actionName = folderName === 'RO' ? 'getROFiles' : 'getExportDocs';
-            const result = await appsScriptJsonp({ action: actionName });
+            const result = await jsonpRequest({ action: actionName });
 
+            if (Array.isArray(result)) return result;
+            if (result && result.filesData && Array.isArray(result.filesData)) return result.filesData;
+            if (result && result.results && Array.isArray(result.results)) return result.results;
             if (result && result.status === 'error') {
                 alert(result.message || 'Drive fetch failed');
                 return [];
             }
-            if (Array.isArray(result)) return result;
-            if (result && result.filesData && Array.isArray(result.filesData)) return result.filesData;
-            if (result && result.results && Array.isArray(result.results)) return result.results;
             return [];
         } catch (error) {
             console.error('Drive fetch error', error);
-            alert('Failed to load Drive files: ' + error.message);
+            alert(`Failed to load Drive files: ${error.message}`);
             return [];
         }
     }
@@ -1189,8 +1187,7 @@
             payload.append('mimeType', file.type || 'application/octet-stream');
             payload.append('base64Data', base64Data);
             try {
-                const response = await fetch(WEB_APP_URL, { method: 'POST', body: payload });
-                const result = await response.json();
+                const result = await jsonpRequest(Object.fromEntries(payload.entries()));
                 if (result.status === 'success') {
                     alert('Upload successful');
                     uploadInput.value = '';
@@ -1200,7 +1197,7 @@
                 }
             } catch (error) {
                 console.error('Upload error', error);
-                alert('Upload failed. Because this page is opened from local D:/ file, browser may block upload. Host the HTML or upload from Apps Script web app for file uploads.');
+                alert('Upload failed. Check connection.');
             }
         };
         reader.readAsDataURL(file);
@@ -1217,7 +1214,7 @@
         payload.append('email', email);
         payload.append('role', role);
         try {
-            const result = await appsScriptJsonp(Object.fromEntries(payload));
+            const result = await jsonpRequest(Object.fromEntries(payload.entries()));
             if (result.status === 'success') {
                 alert('File shared successfully');
             } else {
@@ -1236,8 +1233,8 @@
             statusEl.textContent = 'Checking backend connection...';
         }
         try {
-            const result = await appsScriptJsonp({ action: 'getExportDocs' });
-            if (result && result.status === 'error') throw new Error(result.message || 'Backend error');
+            const result = await jsonpRequest({ action: 'getExportDocs' });
+            if (result && result.error) throw new Error(result.error);
             if (!Array.isArray(result)) throw new Error('Unexpected response format');
             if (statusEl) {
                 statusEl.className = 'small text-success mt-2';
@@ -1271,9 +1268,9 @@
 
         try { 
             const startTime = performance.now();
-            const data = await appsScriptJsonp();
-            if (data && data.status === 'error') throw new Error(data.message || 'Backend error');
-            const newData = (data.opsData && data.opsData.rows) ? data.opsData.rows : [];
+            const data = await jsonpRequest();
+            if (data && data.status === 'error') throw new Error(data.message || 'Backend returned error');
+            const newData = data && data.opsData && data.opsData.rows ? data.opsData.rows : [];
 
             const dataChanged = !isInitialized || JSON.stringify(newData) !== JSON.stringify(masterData);
 
@@ -1592,7 +1589,7 @@
         });
 
         try {
-            const res = await appsScriptJsonp(Object.fromEntries(params));
+            const res = await jsonpRequest(Object.fromEntries(params.entries()));
             if (res.status === "success") { 
                 itemModal.hide(); 
                 refreshAll(); 
@@ -2002,7 +1999,7 @@
         };
 
         try {
-            const res = await appsScriptJsonp(payload);
+            const res = await jsonpRequest(payload);
             if(res.status === "success") { 
                 newOrderModal.hide(); 
                 ["new-ro", "new-vendor", "new-dest", "new-order-pin"].forEach(id => document.getElementById(id).value = "");
