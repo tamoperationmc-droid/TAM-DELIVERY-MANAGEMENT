@@ -1982,31 +1982,50 @@
             </tr>`).join('');
     }
 
-    async function submitNewOrder() {
-        const pin = document.getElementById('new-order-pin').value;
-        const ro = document.getElementById('new-ro').value;
-        if(!pin || !ro || stagedSkus.length === 0) { alert("PIN, RO and at least one item required."); return; }
-        const btn = document.getElementById('save-new-btn'); btn.disabled = true;
-        
-        const payload = { 
-            action: 'addNewOrder', 
-            pin: pin, 
-            market: document.getElementById('new-market').value, 
-            ro: ro, 
-            vendor: document.getElementById('new-vendor').value, 
-            dest: document.getElementById('new-dest').value, 
-            items: JSON.stringify(stagedSkus)
+    async function submitUpdate() {
+        const pin = document.getElementById('staff-pin').value;
+        if (!pin) {
+            alert("PIN required.");
+            return;
+        }
+    
+        const btn = document.getElementById('update-btn');
+        btn.disabled = true;
+        btn.innerHTML = "⌛ Updating...";
+    
+        const payload = {
+            action: 'updateRO',
+            pin: pin,
+            ro: currentlyEditingRO,
+            dest: document.getElementById('edit-dest').value,
+            vendor: document.getElementById('edit-vendor').value,
+            shipType: document.getElementById('edit-shiptype').value,
+            facility: document.getElementById('edit-facility').value,
+            invoicePl: document.getElementById('edit-invoice').value,
+            cusdecStatus: document.getElementById('edit-cusdec-status').value,
+            cusdecNo: document.getElementById('edit-cusdec-no').value,
+            note: document.getElementById('edit-note').value,
+            cutoff: document.getElementById('edit-cutoff').value,
+            loading: document.getElementById('edit-loading-status').value
         };
-
+    
         try {
             const res = await jsonpRequest(payload);
-            if(res.status === "success") { 
-                newOrderModal.hide(); 
-                ["new-ro", "new-vendor", "new-dest", "new-order-pin"].forEach(id => document.getElementById(id).value = "");
-                refreshAll(); 
-            } else { alert(res.message); }
-        } catch(e) { alert("Network error."); }
+    
+            if (res.status === "success") {
+                alert("Updated successfully.");
+                itemModal.hide();
+                refreshAll();
+            } else {
+                alert(res.message || "Update failed.");
+            }
+    
+        } catch (e) {
+            alert("Error updating. Check connection.");
+        }
+    
         btn.disabled = false;
+        btn.innerHTML = "UPDATE DATABASE";
     }
 
     function filterData() {
