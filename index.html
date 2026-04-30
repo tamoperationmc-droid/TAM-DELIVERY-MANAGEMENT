@@ -494,7 +494,7 @@
                                 <button class="btn btn-sm btn-outline-primary export-filter-btn" data-type="FCL" onclick="setExportTypeFilter('FCL')">FCL</button>
                                 <button class="btn btn-sm btn-outline-primary export-filter-btn" data-type="CONSOLE" onclick="setExportTypeFilter('CONSOLE')">CONSOLE</button>
                                 <button class="btn btn-sm btn-outline-primary export-filter-btn" data-type="AIR" onclick="setExportTypeFilter('AIR')">AIR</button>
-                                <button class="btn btn-sm btn-outline-primary export-filter-btn" data-type="CURRIOR" onclick="setExportTypeFilter('COURIER')">COURIER</button>
+                                <button class="btn btn-sm btn-outline-primary export-filter-btn" data-type="COURIER" onclick="setExportTypeFilter('COURIER')">COURIER</button>
                             </div>
                         </div>
 
@@ -575,487 +575,45 @@
                         </div>
                     </div>
                 </div>
-         <!-- REPLACE LINES 578-616 with this updated code for Share/Download section -->
-
-<div class="col-md-4">
-    <div class="section-card mb-3">
-        <h6 class="fw-bold mb-3">📤 Upload File</h6>
-        <div class="mb-3">
-            <label class="data-label">Folder</label>
-            <select id="drive-upload-folder" class="form-select form-select-sm">
-                <option value="Export Docs">Export Docs</option>
-                <option value="RO">RO</option>
-            </select>
-        </div>
-        <div class="mb-3">
-            <label class="data-label">Choose file</label>
-            <input id="drive-upload-file" type="file" class="form-control form-control-sm" accept=".pdf, .xlsx, .xls, .csv, .docx, .doc">
-        </div>
-        <button class="btn btn-primary btn-sm w-100" onclick="uploadDriveFile()">Upload to Drive</button>
-    </div>
-
-    <div class="section-card mb-3">
-        <h6 class="fw-bold mb-3">📅 Filter by Upload Date</h6>
-        <div class="mb-3">
-            <label class="data-label">Select Date</label>
-            <input id="drive-date-filter" type="date" class="form-control form-control-sm" />
-        </div>
-        <button class="btn btn-secondary btn-sm w-100 mb-2" onclick="filterDriveFilesByDate()">Filter Today's Files</button>
-        <button class="btn btn-outline-secondary btn-sm w-100" onclick="clearDateFilter()">Clear Filter</button>
-    </div>
-
-    <div class="section-card">
-        <h6 class="fw-bold mb-3">📤 Share / Download</h6>
-        
-        <!-- Share Method Selector -->
-        <div class="mb-3">
-            <label class="data-label">Share Method</label>
-            <select id="drive-share-method" class="form-select form-select-sm" onchange="updateShareForm()">
-                <option value="email">📧 Email</option>
-                <option value="whatsapp">💬 WhatsApp</option>
-                <option value="outlook">📧 Outlook Desktop</option>
-                <option value="teams">👥 Microsoft Teams</option>
-            </select>
-        </div>
-
-        <!-- File Selection -->
-        <div class="mb-3">
-            <label class="data-label">Selected File ID</label>
-            <input id="drive-share-file-id" type="text" class="form-control form-control-sm" placeholder="Paste file ID or select from list" />
-        </div>
-
-        <!-- Email Share Section -->
-        <div id="email-share-section" class="mb-3">
-            <label class="data-label">Email Address</label>
-            <input id="drive-share-email" type="email" class="form-control form-control-sm" placeholder="user@example.com" />
-        </div>
-
-        <!-- WhatsApp Share Section (Hidden by default) -->
-        <div id="whatsapp-share-section" class="mb-3" style="display:none;">
-            <label class="data-label">WhatsApp Number</label>
-            <input id="drive-share-whatsapp" type="tel" class="form-control form-control-sm" placeholder="+1 (555) 000-0000" />
-            <small class="text-muted">Format: +country code + number</small>
-        </div>
-
-        <!-- Outlook Share Section (Hidden by default) -->
-        <div id="outlook-share-section" class="mb-3" style="display:none;">
-            <label class="data-label">Recipient Email</label>
-            <input id="drive-share-outlook" type="email" class="form-control form-control-sm" placeholder="recipient@outlook.com" />
-        </div>
-
-        <!-- Teams Share Section (Hidden by default) -->
-        <div id="teams-share-section" class="mb-3" style="display:none;">
-            <label class="data-label">Teams Channel/Chat</label>
-            <select id="drive-share-teams-channel" class="form-select form-select-sm">
-                <option value="">Select channel...</option>
-                <option value="general">General</option>
-                <option value="shipping">Shipping</option>
-                <option value="delivery">Delivery</option>
-            </select>
-            <small class="text-muted">Paste the link in your Teams channel</small>
-        </div>
-
-        <!-- Access Role (for email/Outlook) -->
-        <div id="role-section" class="mb-3">
-            <label class="data-label">Access Role</label>
-            <select id="drive-share-role" class="form-select form-select-sm">
-                <option value="viewer">👁️ Viewer (Read Only)</option>
-                <option value="editor">✏️ Editor (Can Edit)</option>
-            </select>
-        </div>
-
-        <!-- Action Buttons -->
-        <button class="btn btn-info btn-sm w-100 mb-2" onclick="shareDriveFile()">
-            <span id="share-btn-text">📤 Share File</span>
-        </button>
-        <button class="btn btn-outline-secondary btn-sm w-100" onclick="downloadSelectedDriveFile()">
-            💾 Download File
-        </button>
-        
-        <!-- Status Message -->
-        <div id="share-status" class="mt-2" style="display:none;"></div>
-    </div>
-</div>
-
-<!-- Add this JavaScript at the end of the file, before </script> closing tag -->
-<script>
-// ===== DRIVE FILE MANAGEMENT =====
-
-let driveFolderName = 'Export Docs';
-let driveFolderNameForFilter = null;
-
-// Update share form based on selected method
-function updateShareForm() {
-    const method = document.getElementById('drive-share-method').value;
-    
-    // Hide all sections
-    document.getElementById('email-share-section').style.display = 'none';
-    document.getElementById('whatsapp-share-section').style.display = 'none';
-    document.getElementById('outlook-share-section').style.display = 'none';
-    document.getElementById('teams-share-section').style.display = 'none';
-    document.getElementById('role-section').style.display = 'none';
-    
-    // Show relevant sections
-    switch(method) {
-        case 'email':
-            document.getElementById('email-share-section').style.display = 'block';
-            document.getElementById('role-section').style.display = 'block';
-            document.getElementById('share-btn-text').textContent = '📧 Share via Email';
-            break;
-        case 'whatsapp':
-            document.getElementById('whatsapp-share-section').style.display = 'block';
-            document.getElementById('share-btn-text').textContent = '💬 Share via WhatsApp';
-            break;
-        case 'outlook':
-            document.getElementById('outlook-share-section').style.display = 'block';
-            document.getElementById('role-section').style.display = 'block';
-            document.getElementById('share-btn-text').textContent = '📧 Share via Outlook';
-            break;
-        case 'teams':
-            document.getElementById('teams-share-section').style.display = 'block';
-            document.getElementById('share-btn-text').textContent = '👥 Share via Teams';
-            break;
-    }
-}
-
-// Filter files by selected date
-function filterDriveFilesByDate() {
-    const selectedDate = document.getElementById('drive-date-filter').value;
-    
-    if (!selectedDate) {
-        alert('Please select a date');
-        return;
-    }
-    
-    showLoadingIndicator('drive-files-container', 'Filtering files...');
-    
-    jsonpRequest({
-        action: 'getDriveFiles',
-        folder: driveFolderName,
-        dateFilter: selectedDate,
-        _timeout: 20000
-    }).then(response => {
-        if (response.success && response.files) {
-            renderDriveFiles(response.files, selectedDate);
-        } else {
-            document.getElementById('drive-files-container').innerHTML = `
-                <div class="alert alert-warning">
-                    No files found for ${new Date(selectedDate).toLocaleDateString()}
+                <div class="col-md-4">
+                    <div class="section-card mb-3">
+                        <h6 class="fw-bold mb-3">Upload File</h6>
+                        <div class="mb-3">
+                            <label class="data-label">Folder</label>
+                            <select id="drive-upload-folder" class="form-select form-select-sm">
+                                <option value="Export Docs">Export Docs</option>
+                                <option value="RO">RO</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="data-label">Choose file</label>
+                            <input id="drive-upload-file" type="file" class="form-control form-control-sm" accept=".pdf, .xlsx, .xls, .csv, .docx, .doc">
+                        </div>
+                        <button class="btn btn-primary btn-sm w-100" onclick="uploadDriveFile()">Upload to Drive</button>
+                    </div>
+                    <div class="section-card">
+                        <h6 class="fw-bold mb-3">Share / Download</h6>
+                        <div class="mb-3">
+                            <label class="data-label">Selected file ID</label>
+                            <input id="drive-share-file-id" type="text" class="form-control form-control-sm" placeholder="Paste file ID" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="data-label">Email to share</label>
+                            <input id="drive-share-email" type="email" class="form-control form-control-sm" placeholder="user@example.com" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="data-label">Role</label>
+                            <select id="drive-share-role" class="form-select form-select-sm">
+                                <option value="viewer">Viewer</option>
+                                <option value="editor">Editor</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-info btn-sm w-100 mb-2" onclick="shareDriveFile()">Share File</button>
+                        <button class="btn btn-outline-secondary btn-sm w-100" onclick="downloadSelectedDriveFile()">Download File</button>
+                    </div>
                 </div>
-            `;
-        }
-    }).catch(err => {
-        document.getElementById('drive-files-container').innerHTML = `
-            <div class="alert alert-danger">Error: ${err.message}</div>
-        `;
-    });
-}
-
-// Clear date filter
-function clearDateFilter() {
-    document.getElementById('drive-date-filter').value = '';
-    loadDriveTabFiles(driveFolderName);
-}
-
-// Render drive files in table format
-function renderDriveFiles(files, dateLabel = '') {
-    let html = '<div class="table-responsive"><table class="table table-hover table-sm"><thead class="table-light"><tr>';
-    html += '<th>📄 File Name</th><th>📅 Date</th><th>💾 Size</th><th>⚙️ Action</th></tr></thead><tbody>';
-    
-    if (files.length === 0) {
-        html += `<tr><td colspan="4" class="text-center text-muted py-3">No files found${dateLabel ? ` for ${dateLabel}` : ''}</td></tr>`;
-    } else {
-        files.forEach(file => {
-            const uploadDate = new Date(file.createdTime).toLocaleDateString();
-            html += `<tr>
-                <td><small>${file.name}</small></td>
-                <td><small>${uploadDate}</small></td>
-                <td><small>${file.sizeText || '0 B'}</small></td>
-                <td>
-                    <button class="btn btn-xs btn-outline-primary btn-sm" onclick="selectDriveFile('${file.id}', '${file.name.replace(/'/g, "\\'")}')">Select</button>
-                    <a href="${file.url}" target="_blank" class="btn btn-xs btn-outline-success btn-sm">Open</a>
-                </td>
-            </tr>`;
-        });
-    }
-    
-    html += '</tbody></table></div>';
-    document.getElementById('drive-files-container').innerHTML = html;
-}
-
-// Select file for sharing
-function selectDriveFile(fileId, fileName) {
-    document.getElementById('drive-share-file-id').value = fileId;
-    showStatusMessage(`✅ Selected: ${fileName}`, 'success');
-}
-
-// Share file via selected method
-async function shareDriveFile() {
-    const method = document.getElementById('drive-share-method').value;
-    const fileId = document.getElementById('drive-share-file-id').value;
-    
-    if (!fileId) {
-        alert('Please enter a file ID or select a file from the list');
-        return;
-    }
-    
-    let params = {
-        action: 'shareDriveFile',
-        fileId: fileId,
-        method: method,
-        _timeout: 15000
-    };
-    
-    // Add method-specific parameters
-    switch(method) {
-        case 'email':
-            const email = document.getElementById('drive-share-email').value;
-            if (!email) {
-                alert('Please enter an email address');
-                return;
-            }
-            params.email = email;
-            params.role = document.getElementById('drive-share-role').value;
-            break;
-            
-        case 'whatsapp':
-            const phone = document.getElementById('drive-share-whatsapp').value;
-            if (!phone) {
-                alert('Please enter a WhatsApp number');
-                return;
-            }
-            params.phone = phone;
-            break;
-            
-        case 'outlook':
-            const outlookEmail = document.getElementById('drive-share-outlook').value;
-            if (!outlookEmail) {
-                alert('Please enter an Outlook email address');
-                return;
-            }
-            params.email = outlookEmail;
-            params.role = document.getElementById('drive-share-role').value;
-            break;
-            
-        case 'teams':
-            // Teams sharing doesn't need recipient info
-            break;
-    }
-    
-    try {
-        showStatusMessage('Preparing to share...', 'info');
-        const response = await jsonpRequest(params);
-        
-        if (response.status === 'success') {
-            handleShareSuccess(response, method);
-        } else {
-            showStatusMessage(`Error: ${response.message}`, 'danger');
-        }
-    } catch (error) {
-        showStatusMessage(`Failed: ${error.message}`, 'danger');
-    }
-}
-
-// Handle successful share
-function handleShareSuccess(response, method) {
-    let message = '';
-    
-    switch(method) {
-        case 'email':
-            message = `✅ File shared with ${response.sharedWith}`;
-            clearShareForm();
-            break;
-            
-        case 'whatsapp':
-            message = '✅ Opening WhatsApp...';
-            if (response.whatsappUrl) {
-                window.open(response.whatsappUrl, '_blank');
-            }
-            clearShareForm();
-            break;
-            
-        case 'outlook':
-            message = '✅ Opening Outlook...';
-            if (response.outlookUrl) {
-                window.open(response.outlookUrl, '_blank');
-            }
-            clearShareForm();
-            break;
-            
-        case 'teams':
-            message = '✅ Teams link generated!';
-            break;
-    }
-    
-    showStatusMessage(message, 'success');
-}
-
-// Show status message
-function showStatusMessage(message, type = 'info') {
-    const statusDiv = document.getElementById('share-status');
-    const className = `alert alert-${type}`;
-    statusDiv.innerHTML = message;
-    statusDiv.className = className;
-    statusDiv.style.display = 'block';
-    
-    if (type === 'success') {
-        setTimeout(() => {
-            statusDiv.style.display = 'none';
-        }, 5000);
-    }
-}
-
-// Clear share form
-function clearShareForm() {
-    document.getElementById('drive-share-file-id').value = '';
-    document.getElementById('drive-share-email').value = '';
-    document.getElementById('drive-share-whatsapp').value = '';
-    document.getElementById('drive-share-outlook').value = '';
-}
-
-// Set drive folder
-function setDriveFolder(folderName) {
-    driveFolderName = folderName;
-    document.getElementById('drive-date-filter').value = '';
-    loadDriveTabFiles(folderName);
-}
-
-// Load drive tab files
-function loadDriveTabFiles(folderName, dateFilter = null) {
-    driveFolderName = folderName;
-    
-    showLoadingIndicator('drive-files-container', 'Loading files...');
-    
-    jsonpRequest({
-        action: 'getDriveFiles',
-        folder: folderName,
-        dateFilter: dateFilter,
-        _timeout: 20000
-    }).then(response => {
-        if (response.success && response.files) {
-            renderDriveFiles(response.files);
-        } else {
-            document.getElementById('drive-files-container').innerHTML = `
-                <div class="alert alert-warning">Failed to load files</div>
-            `;
-        }
-    }).catch(err => {
-        document.getElementById('drive-files-container').innerHTML = `
-            <div class="alert alert-danger">Error: ${err.message}</div>
-        `;
-    });
-}
-
-// Download selected file
-function downloadSelectedDriveFile() {
-    const fileId = document.getElementById('drive-share-file-id').value;
-    if (!fileId) {
-        alert('Please select a file first');
-        return;
-    }
-    window.open(`https://drive.google.com/uc?export=download&id=${fileId}`, '_blank');
-}
-
-// Test drive backend connection
-function testDriveBackend() {
-    showStatusMessage('Testing connection...', 'info');
-    jsonpRequest({
-        action: 'testConnection',
-        _timeout: 5000
-    }).then(response => {
-        if (response.status === 'success') {
-            showStatusMessage('✅ Backend connected!', 'success');
-            document.getElementById('drive-backend-url').textContent = 'Connected ✓';
-        }
-    }).catch(err => {
-        showStatusMessage(`❌ Connection failed: ${err.message}`, 'danger');
-    });
-}
-
-// Upload file to drive
-function uploadDriveFile() {
-    const folderName = document.getElementById('drive-upload-folder').value;
-    const fileInput = document.getElementById('drive-upload-file');
-    
-    if (!fileInput.files.length) {
-        alert('Please select a file');
-        return;
-    }
-    
-    const file = fileInput.files[0];
-    const reader = new FileReader();
-    
-    reader.onload = function(e) {
-        const base64Data = btoa(reader.result);
-        
-        showStatusMessage('Uploading...', 'info');
-        
-        jsonpRequest({
-            action: 'uploadFile',
-            folderName: folderName,
-            fileName: file.name,
-            base64Data: base64Data,
-            mimeType: file.type,
-            _timeout: 30000
-        }).then(response => {
-            if (response.status === 'success') {
-                showStatusMessage(`✅ File uploaded: ${response.name}`, 'success');
-                fileInput.value = '';
-                loadDriveTabFiles(folderName);
-            } else {
-                showStatusMessage(`Error: ${response.message}`, 'danger');
-            }
-        }).catch(err => {
-            showStatusMessage(`Upload failed: ${err.message}`, 'danger');
-        });
-    };
-    
-    reader.readAsBinaryString(file);
-}
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    const today = new Date().toISOString().split('T')[0];
-    const dateInput = document.getElementById('drive-date-filter');
-    if (dateInput) dateInput.value = today;
-    
-    // Initialize form visibility
-    updateShareForm();
-    
-    // Load initial files
-    loadDriveTabFiles('Export Docs');
-});
-
-// Show loading indicator
-function showLoadingIndicator(elementId, message) {
-    document.getElementById(elementId).innerHTML = `
-        <div class="text-center text-muted my-5">
-            <div class="spinner-border text-primary mb-3" role="status">
-                <span class="visually-hidden">Loading...</span>
             </div>
-            <p>${message}</p>
         </div>
-    `;
-}
-
-// On drive search
-function onDriveSearch() {
-    const query = document.getElementById('drive-search-input').value;
-    if (query.length < 2) return;
-    
-    jsonpRequest({
-        action: 'searchFiles',
-        query: query,
-        _timeout: 15000
-    }).then(response => {
-        if (response.status === 'success' && response.results) {
-            renderDriveFiles(response.results, `matching "${query}"`);
-        }
-    }).catch(err => {
-        console.error('Search error:', err);
-    });
-}
-</script>
     </div>
 </div>
 
@@ -2600,46 +2158,12 @@ function onDriveSearch() {
     }
 
     function filterData() {
-        const term = document.getElementById('search-input').value.trim().toUpperCase();
-    
-        if (!term) {
-            renderPending(masterData);
-            return;
-        }
-    
-        const filtered = masterData.filter(row => {
-            const mainFields = [
-                row.RO_VALUE,
-                row.VENDOR_VALUE,
-                row.DEST_VALUE,
-                row.TYPE_VALUE,
-                row.FACILITY_VALUE,
-                row.INVOICE_STATUS,
-                row.CUSDEC_STATUS,
-                row.COL_8,
-                row.STATUS_CLEAN,
-                row.CUTOFF_VALUE,
-                row.VEHICLE,
-                row.NOTE_VALUE
-            ];
-    
-            const mainMatch = mainFields.some(value =>
-                String(value || '').toUpperCase().includes(term)
-            );
-    
-            const itemMatch = Array.isArray(row.ITEMS) && row.ITEMS.some(item => {
-                return [
-                    item.productCode,
-                    item.description,
-                    item.location,
-                    item.qty,
-                    item.ctns
-                ].some(value => String(value || '').toUpperCase().includes(term));
-            });
-    
-            return mainMatch || itemMatch;
-        });
-    
+        const term = document.getElementById('search-input').value.toUpperCase();
+        const filtered = masterData.filter(row => 
+            String(row.RO_VALUE).toUpperCase().includes(term) || 
+            String(row.VENDOR_VALUE).toUpperCase().includes(term) ||
+            String(row.DEST_VALUE).toUpperCase().includes(term)
+        );
         renderPending(filtered);
     }
 
@@ -2764,6 +2288,347 @@ function onDriveSearch() {
         if (backendUrlEl) backendUrlEl.textContent = WEB_APP_URL;
         setInterval(refreshAll, 300000);
     };
+
+
+/* ============================================================
+   FRONT-END STABILITY PATCH - Apps Script backend compatible
+   Added by ChatGPT: keeps existing UI/functions and overrides only
+   the unstable Drive / update / upload / share handlers.
+   ============================================================ */
+(function () {
+  function ok(result) {
+    return !!result && (result.status === 'success' || result.success === true);
+  }
+
+  function messageOf(result, fallback) {
+    return (result && (result.message || result.error)) || fallback || 'Unknown error';
+  }
+
+  function esc(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (m) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m];
+    });
+  }
+
+  function extractFiles(result) {
+    if (Array.isArray(result)) return result;
+    if (result && Array.isArray(result.files)) return result.files;
+    if (result && Array.isArray(result.results)) return result.results;
+    if (result && Array.isArray(result.filesData)) return result.filesData;
+    return [];
+  }
+
+  window.fetchDriveFiles = async function (folderName) {
+    try {
+      const result = await jsonpRequest({
+        action: 'getDriveFiles',
+        folder: folderName || driveFolderName || 'Export Docs'
+      });
+
+      if (result && result.status === 'error') {
+        throw new Error(messageOf(result, 'Drive fetch failed'));
+      }
+
+      return extractFiles(result);
+    } catch (error) {
+      console.error('Drive fetch error:', error);
+      alert('Failed to load Drive files: ' + error.message);
+      return [];
+    }
+  };
+
+  window.loadDriveTabFiles = async function (folderName) {
+    const container = document.getElementById('drive-files-container');
+    if (!container) return;
+
+    driveFolderName = folderName || driveFolderName || 'Export Docs';
+    updateDriveFolderButtons(driveFolderName);
+
+    container.innerHTML = '<div class="text-center text-muted mt-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Loading Drive files...</p></div>';
+
+    try {
+      const files = await fetchDriveFiles(driveFolderName);
+      driveData = Array.isArray(files) ? files : [];
+      renderDriveFiles(driveData);
+    } catch (error) {
+      console.error('Drive tab load error:', error);
+      container.innerHTML = '<div class="text-danger text-center mt-5">Unable to load Drive files right now.</div>';
+    }
+  };
+
+  window.onDriveSearch = async function () {
+    const input = document.getElementById('drive-search-input');
+    driveSearchTerm = input ? input.value.trim() : '';
+
+    if (!driveSearchTerm) {
+      renderDriveFiles(driveData);
+      return;
+    }
+
+    const localMatches = (driveData || []).filter(function (file) {
+      const q = driveSearchTerm.toLowerCase();
+      return String(file.name || '').toLowerCase().includes(q) || String(file.folder || '').toLowerCase().includes(q);
+    });
+
+    if (localMatches.length > 0) {
+      renderDriveFiles(localMatches);
+      return;
+    }
+
+    try {
+      const result = await jsonpRequest({ action: 'searchFiles', query: driveSearchTerm });
+      renderDriveFiles(extractFiles(result));
+    } catch (err) {
+      console.warn('Drive backend search failed:', err.message);
+      renderDriveFiles([]);
+    }
+  };
+
+  window.renderDriveFiles = function (files) {
+    const container = document.getElementById('drive-files-container');
+    if (!container) return;
+
+    const list = Array.isArray(files) ? files : [];
+    const q = String(driveSearchTerm || '').toLowerCase();
+    const visible = list.filter(function (file) {
+      if (!q) return true;
+      return String(file.name || '').toLowerCase().includes(q) || String(file.folder || '').toLowerCase().includes(q);
+    });
+
+    if (visible.length === 0) {
+      container.innerHTML = '<div class="text-center text-muted mt-5"><p>No files found.</p></div>';
+      return;
+    }
+
+    container.innerHTML = visible.map(function (file) {
+      const id = String(file.id || '');
+      const url = file.url || file.webViewLink || '#';
+      const downloadLink = id ? 'https://drive.google.com/uc?export=download&id=' + encodeURIComponent(id) : url;
+      return '<div class="card mb-2 p-3">' +
+        '<div class="d-flex justify-content-between align-items-start flex-wrap gap-2">' +
+          '<div>' +
+            '<div class="fw-bold">' + esc(file.name) + '</div>' +
+            '<div class="text-muted small">' + esc(file.folder || driveFolderName || '') + ' • ' + esc(file.mimeType || '') + '</div>' +
+            '<div class="text-muted small">Created: ' + esc(file.dateText || file.createdTime || '') + '</div>' +
+            '<div class="text-muted small">Size: ' + esc(file.sizeText || file.size || '') + '</div>' +
+          '</div>' +
+          '<div class="d-flex flex-wrap gap-2">' +
+            '<button class="btn btn-sm btn-outline-primary" onclick="window.open(\'' + esc(url) + '\', \'_blank\')">Open</button>' +
+            '<button class="btn btn-sm btn-outline-success" onclick="window.open(\'' + esc(downloadLink) + '\', \'_blank\')">Download</button>' +
+            '<button class="btn btn-sm btn-outline-secondary" onclick="selectDriveFile(\'' + esc(id) + '\')">Select</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  };
+
+  window.testDriveBackend = async function () {
+    const statusEl = document.getElementById('drive-status-message');
+    if (statusEl) {
+      statusEl.className = 'small text-muted mt-2';
+      statusEl.textContent = 'Checking backend connection...';
+    }
+
+    try {
+      const result = await jsonpRequest({ action: 'getDriveFiles', folder: driveFolderName || 'Export Docs' });
+      if (result && result.status === 'error') throw new Error(messageOf(result, 'Backend returned error'));
+      const files = extractFiles(result);
+      if (statusEl) {
+        statusEl.className = 'small text-success mt-2';
+        statusEl.textContent = 'Backend live: returned ' + files.length + ' files from Drive.';
+      }
+    } catch (error) {
+      if (statusEl) {
+        statusEl.className = 'small text-danger mt-2';
+        statusEl.textContent = 'Backend test failed: ' + error.message;
+      }
+    }
+  };
+
+  window.shareDriveFile = async function () {
+    const fileId = document.getElementById('drive-share-file-id').value.trim();
+    const email = document.getElementById('drive-share-email').value.trim();
+    const role = document.getElementById('drive-share-role').value;
+
+    if (!fileId || !email) {
+      alert('File ID and email are required.');
+      return;
+    }
+
+    try {
+      const result = await jsonpRequest({ action: 'shareFile', fileId: fileId, email: email, role: role });
+      alert(ok(result) ? 'File shared successfully.' : messageOf(result, 'Share failed.'));
+    } catch (error) {
+      console.error('Share error:', error);
+      alert('Share failed. Check connection.');
+    }
+  };
+
+  window.uploadDriveFile = function () {
+    const uploadInput = document.getElementById('drive-upload-file');
+    const file = uploadInput && uploadInput.files ? uploadInput.files[0] : null;
+    const folderName = document.getElementById('drive-upload-folder').value;
+    const uploadBtn = event && event.target ? event.target : null;
+
+    if (!file) {
+      alert('Choose a file to upload.');
+      return;
+    }
+
+    if (file.size > 900000) {
+      alert('This upload method supports small files only. For large files, upload directly to Drive or update Apps Script doPost to return postMessage.');
+      return;
+    }
+
+    if (uploadBtn) {
+      uploadBtn.disabled = true;
+      uploadBtn.innerHTML = 'Uploading...';
+    }
+
+    const reader = new FileReader();
+    reader.onload = async function (ev) {
+      try {
+        const base64Data = String(ev.target.result).split(',')[1];
+        const result = await jsonpRequest({
+          action: 'uploadFile',
+          folderName: folderName,
+          fileName: file.name,
+          mimeType: file.type || 'application/octet-stream',
+          base64Data: base64Data,
+          _timeout: 120000
+        });
+
+        if (ok(result)) {
+          alert('Upload successful.');
+          uploadInput.value = '';
+          loadDriveTabFiles(folderName);
+        } else {
+          alert(messageOf(result, 'Upload failed.'));
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        alert('Upload failed. Check deployment access or file size.');
+      } finally {
+        if (uploadBtn) {
+          uploadBtn.disabled = false;
+          uploadBtn.innerHTML = 'Upload to Drive';
+        }
+      }
+    };
+
+    reader.onerror = function () {
+      if (uploadBtn) {
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = 'Upload to Drive';
+      }
+      alert('Unable to read selected file.');
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  window.submitUpdate = async function () {
+    const pin = document.getElementById('staff-pin').value;
+    if (!pin) {
+      alert('PIN required.');
+      return;
+    }
+
+    const btn = document.getElementById('update-btn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '⌛ Updating...';
+    }
+
+    const payload = {
+      action: 'updateRO',
+      pin: pin,
+      ro: currentlyEditingRO,
+      dest: document.getElementById('edit-dest').value,
+      vendor: document.getElementById('edit-vendor').value,
+      shipType: document.getElementById('edit-shiptype').value,
+      facility: document.getElementById('edit-facility').value,
+      invoicePl: document.getElementById('edit-invoice').value,
+      cusdecStatus: document.getElementById('edit-cusdec-status').value,
+      cusdecNo: document.getElementById('edit-cusdec-no').value,
+      note: document.getElementById('edit-note').value,
+      cutoff: document.getElementById('edit-cutoff').value,
+      loading: document.getElementById('edit-loading-status').value
+    };
+
+    try {
+      const res = await jsonpRequest(payload);
+      if (ok(res)) {
+        alert('Updated successfully.');
+        itemModal.hide();
+        refreshAll();
+      } else {
+        alert(messageOf(res, 'Update failed.'));
+      }
+    } catch (e) {
+      console.error('Update error:', e);
+      alert('Error updating. Check connection.');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = 'UPDATE DATABASE';
+      }
+    }
+  };
+
+  window.submitNewOrder = async function () {
+    const pin = document.getElementById('new-order-pin').value;
+    const market = document.getElementById('new-market').value;
+    const ro = document.getElementById('new-ro').value.trim();
+    const vendor = document.getElementById('new-vendor').value.trim();
+    const dest = document.getElementById('new-dest').value.trim();
+
+    if (!pin) { alert('PIN required.'); return; }
+    if (!ro || !vendor || !dest) { alert('RO, Vendor and Destination are required.'); return; }
+    if (!stagedSkus || stagedSkus.length === 0) { alert('Please add at least one item.'); return; }
+
+    const btn = document.getElementById('save-new-btn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = 'Saving...';
+    }
+
+    try {
+      const result = await jsonpRequest({
+        action: 'addNewOrder',
+        pin: pin,
+        market: market,
+        ro: ro,
+        vendor: vendor,
+        dest: dest,
+        items: JSON.stringify(stagedSkus)
+      });
+
+      if (ok(result)) {
+        alert('Shipment saved successfully.');
+        newOrderModal.hide();
+        stagedSkus = [];
+        renderStageTable();
+        ['new-ro', 'new-vendor', 'new-dest', 'new-order-pin', 'new-product', 'new-desc', 'new-qty', 'new-ctns', 'new-loc'].forEach(function (id) {
+          const el = document.getElementById(id);
+          if (el) el.value = '';
+        });
+        refreshAll();
+      } else {
+        alert(messageOf(result, 'Save failed.'));
+      }
+    } catch (error) {
+      console.error('Save shipment error:', error);
+      alert('Save failed. Check connection.');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = 'SAVE SHIPMENT';
+      }
+    }
+  };
+})();
+
 </script>
 
 <footer>
