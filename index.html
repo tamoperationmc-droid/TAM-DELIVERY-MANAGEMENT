@@ -962,7 +962,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwLLyvWNr8s8RrGT8jJovS4pPagrhVjZQt3fkBQAbzKolsRwI4wChDP1fdFR2fWR5Gt/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyPf72CfSKTNDOK8lCm6PQQ_04ZZu7gDF5GlpCouhZxJkKgDFGxp2QctIhm6UBUAhvP/exec";
     let masterData = [];
     let previousDataMap = new Map(); 
     let stagedSkus = [];
@@ -2158,12 +2158,46 @@
     }
 
     function filterData() {
-        const term = document.getElementById('search-input').value.toUpperCase();
-        const filtered = masterData.filter(row => 
-            String(row.RO_VALUE).toUpperCase().includes(term) || 
-            String(row.VENDOR_VALUE).toUpperCase().includes(term) ||
-            String(row.DEST_VALUE).toUpperCase().includes(term)
-        );
+        const term = document.getElementById('search-input').value.trim().toUpperCase();
+    
+        if (!term) {
+            renderPending(masterData);
+            return;
+        }
+    
+        const filtered = masterData.filter(row => {
+            const mainFields = [
+                row.RO_VALUE,
+                row.VENDOR_VALUE,
+                row.DEST_VALUE,
+                row.TYPE_VALUE,
+                row.FACILITY_VALUE,
+                row.INVOICE_STATUS,
+                row.CUSDEC_STATUS,
+                row.COL_8,
+                row.STATUS_CLEAN,
+                row.CUTOFF_VALUE,
+                row.VEHICLE,
+                row.NOTE_VALUE
+            ];
+    
+            const mainMatch = mainFields.some(value =>
+                String(value || '').toUpperCase().includes(term)
+            );
+    
+            const itemMatch = Array.isArray(row.ITEMS) && row.ITEMS.some(item => {
+                return [
+                    item.productCode,
+                    item.description,
+                    item.location,
+                    item.qty,
+                    item.ctns
+                ].some(value => String(value || '').toUpperCase().includes(term));
+            });
+    
+            return mainMatch || itemMatch;
+        });
+    
         renderPending(filtered);
     }
 
