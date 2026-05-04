@@ -1257,7 +1257,7 @@
         try {
           const base64Data = e.target.result.split(',')[1];
           const uploadId = 'UP_' + Date.now() + '_' + Math.floor(Math.random() * 999999);
-          const chunkSize = 5000;
+          const chunkSize = 1500;
           const totalChunks = Math.ceil(base64Data.length / chunkSize);
     
           for (let i = 0; i < totalChunks; i++) {
@@ -2664,6 +2664,106 @@
     }
   };
 })();
+
+/* FINAL UPLOAD FIX */
+window.uploadDriveFile = async function () {
+  const uploadInput = document.getElementById('drive-upload-file');
+  const file = uploadInput.files[0];
+  const uploadBtn = document.querySelector('button[onclick="uploadDriveFile()"]');
+
+  if (!file) {
+    alert('Choose a file to upload.');
+    return;
+  }
+
+  const folderName = document.getElementById('drive-upload-folder').value;
+
+  if (uploadBtn) {
+    uploadBtn.disabled = true;
+    uploadBtn.innerHTML = 'Preparing...';
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = async function (e) {
+    try {
+      const base64Data = e.target.result.split(',')[1];
+
+      const uploadId =
+        'UP_' + Date.now() + '_' + Math.floor(Math.random() * 999999);
+
+      const chunkSize = 1500;
+      const totalChunks = Math.ceil(base64Data.length / chunkSize);
+
+      for (let i = 0; i < totalChunks; i++) {
+        const chunk = base64Data.substring(i * chunkSize, (i + 1) * chunkSize);
+
+        if (uploadBtn) {
+          uploadBtn.innerHTML = `Uploading ${i + 1}/${totalChunks}`;
+        }
+
+        const chunkResult = await jsonpRequest({
+          action: 'uploadChunk',
+          uploadId: uploadId,
+          index: String(i),
+          chunk: chunk,
+          _timeout: 60000
+        });
+
+        if (!chunkResult || chunkResult.status !== 'success') {
+          throw new Error(
+            chunkResult && chunkResult.message
+              ? chunkResult.message
+              : 'Chunk upload failed at ' + (i + 1)
+          );
+        }
+      }
+
+      if (uploadBtn) uploadBtn.innerHTML = 'Finalizing...';
+
+      const finalResult = await jsonpRequest({
+        action: 'finishChunkUpload',
+        uploadId: uploadId,
+        totalChunks: String(totalChunks),
+        folderName: folderName,
+        fileName: file.name,
+        mimeType: file.type || 'application/octet-stream',
+        _timeout: 120000
+      });
+
+      if (finalResult && finalResult.status === 'success') {
+        alert('Upload successful.');
+        uploadInput.value = '';
+        loadDriveTabFiles(folderName);
+      } else {
+        alert(
+          'Upload failed: ' +
+            (finalResult && finalResult.message
+              ? finalResult.message
+              : JSON.stringify(finalResult))
+        );
+      }
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert('Upload failed: ' + error.message);
+    } finally {
+      if (uploadBtn) {
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = 'Upload to Drive';
+      }
+    }
+  };
+
+  reader.onerror = function () {
+    alert('Unable to read selected file.');
+    if (uploadBtn) {
+      uploadBtn.disabled = false;
+      uploadBtn.innerHTML = 'Upload to Drive';
+    }
+  };
+
+  reader.readAsDataURL(file);
+};
 
 </script>
 
