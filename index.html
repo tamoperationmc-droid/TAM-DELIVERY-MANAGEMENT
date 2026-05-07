@@ -431,7 +431,7 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link fw-bold" id="drive-tab" data-bs-toggle="tab" data-bs-target="#drive-pane"
                     type="button" role="tab" aria-controls="drive-pane">
-                📁 Drive Docs
+                📁 Shipping Docs
             </button>
         </li>
     </ul>
@@ -553,7 +553,7 @@
                     <div class="section-card">
                         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                             <div>
-                                <h5 class="text-primary mb-0 fw-bold">📁 Google Drive Documents</h5>
+                                <h5 class="text-primary mb-0 fw-bold">📁 Shipping Documents</h5>
                                 <small class="text-muted">Browse Export Docs and RO folders.</small>
                             </div>
                             <div class="d-flex flex-wrap gap-2 align-items-center">
@@ -867,6 +867,10 @@
                         <div class="col-md-3">
                             <label class="data-label">Vendor Name</label>
                             <input type="text" id="report-input-vendor" class="form-control form-control-sm" placeholder="Vendor name">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="data-label">CUSDEC NO</label>
+                            <input type="text" id="report-input-cusdec" class="form-control form-control-sm" placeholder="CUSDEC Number">
                         </div>
                         <div class="col-md-3">
                             <label class="data-label">Loading Start Time</label>
@@ -1807,6 +1811,7 @@
         if (row) {
             document.getElementById('report-input-ro').value = row.RO_VALUE || '';
             document.getElementById('report-input-vendor').value = row.VENDOR_VALUE || '';
+            document.getElementById('report-input-cusdec').value = row.COL_8 || '';
             document.getElementById('report-input-start').value = convertToDateTimeLocal(row.START_TIME_DISPLAY);
             document.getElementById('report-input-end').value = convertToDateTimeLocal(row.COMPLETE_TIME_DISPLAY);
             
@@ -1910,6 +1915,7 @@
     function downloadReportPDF() {
         const roValue = document.getElementById('report-input-ro').value || 'Report';
         const vendorValue = document.getElementById('report-input-vendor').value || '-';
+        const cusdec = document.getElementById('report-input-cusdec').value;
         const startValue = document.getElementById('report-input-start').value;
         const endValue = document.getElementById('report-input-end').value;
         
@@ -2008,6 +2014,10 @@
                     <tr>
                         <td class="label-cell">Vendor Name</td>
                         <td class="value-cell">${vendorValue}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">CUSDEC NO</td>
+                        <td class="value-cell">${cusdec || '-'}</td>
                     </tr>
                     <tr>
                         <td class="label-cell">Loading Start Time</td>
