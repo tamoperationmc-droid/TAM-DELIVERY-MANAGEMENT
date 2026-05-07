@@ -2856,26 +2856,33 @@ window.uploadDriveFile = async function () {
   reader.readAsDataURL(file);
 };
 function openVehicleModal() {
-  if (!currentlyEditingRO) {
-    alert('Please open a shipment first.');
-    return;
+  try {
+    if (!currentlyEditingRO) {
+      alert('Please open a shipment first.');
+      return;
+    }
+
+    document.getElementById('vehicle-ro').value = currentlyEditingRO;
+    document.getElementById('vehicle-no').value = '';
+    document.getElementById('vehicle-type').value = '';
+    document.getElementById('vehicle-forwarder').value = '';
+    document.getElementById('vehicle-driver').value = '';
+    document.getElementById('vehicle-contact').value = '';
+    document.getElementById('vehicle-container').value = '';
+    document.getElementById('vehicle-seal').value = '';
+    document.getElementById('vehicle-cbm').value = '';
+    document.getElementById('vehicle-ctns').value = '';
+    document.getElementById('vehicle-pin').value = '';
+
+    const modalEl = document.getElementById('vehicleDetailsModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+
+  } catch (err) {
+    alert('Vehicle window error: ' + err.message);
+    console.error(err);
   }
-
-  document.getElementById('vehicle-ro').value = currentlyEditingRO;
-  document.getElementById('vehicle-no').value = '';
-  document.getElementById('vehicle-type').value = '';
-  document.getElementById('vehicle-forwarder').value = '';
-  document.getElementById('vehicle-driver').value = '';
-  document.getElementById('vehicle-contact').value = '';
-  document.getElementById('vehicle-container').value = '';
-  document.getElementById('vehicle-seal').value = '';
-  document.getElementById('vehicle-cbm').value = '';
-  document.getElementById('vehicle-ctns').value = '';
-  document.getElementById('vehicle-pin').value = '';
-
-  vehicleDetailsModal.show();
 }
-
 async function submitVehicleDetails() {
   const btn = document.getElementById('save-vehicle-btn');
 
