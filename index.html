@@ -3050,13 +3050,14 @@ async function punchGateTime(actionName) {
   }
 }
 
-function punchGateIn() {
-  punchGateTime('punchGateIn');
-}
+window.punchGateIn = async function () {
+  await punchGateTime('punchGateIn');
+};
 
-function punchGateOut() {
-  punchGateTime('punchGateOut');
-}
+window.punchGateOut = async function () {
+  await punchGateTime('punchGateOut');
+};
+    
 </script>
 
 <footer>
