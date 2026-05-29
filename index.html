@@ -2955,9 +2955,13 @@ async function submitVehicleDetails() {
   }
 }
 
-async function punchGateIn() {
+window.punchGateIn = async function () {
   await punchGateTime('punchGateIn');
-}
+};
+
+window.punchGateOut = async function () {
+  await punchGateTime('punchGateOut');
+};
 
 async function punchGateTime(actionName) {
   const ro = document.getElementById('vehicle-ro').value.trim();
@@ -3050,13 +3054,6 @@ async function punchGateTime(actionName) {
   }
 }
 
-window.punchGateIn = async function () {
-  await punchGateTime('punchGateIn');
-};
-
-window.punchGateOut = async function () {
-  await punchGateTime('punchGateOut');
-};
     
 </script>
 
