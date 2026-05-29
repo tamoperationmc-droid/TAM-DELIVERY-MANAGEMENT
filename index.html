@@ -1039,8 +1039,12 @@
 
       <div class="modal-footer">
         <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-        <button id="gate-in-btn" class="btn btn-outline-success fw-bold" onclick="punchGateIn()">🟢 Punch Gate In</button>
-        <button id="gate-out-btn" class="btn btn-outline-danger fw-bold" onclick="punchGateOut()">🔴 Punch Gate Out</button>
+        <button id="gate-in-btn" class="btn btn-outline-success fw-bold">
+            🟢 Punch Gate In
+        </button>
+        <button id="gate-out-btn" class="btn btn-outline-danger fw-bold" >
+            🔴 Punch Gate Out
+        </button>
         <button id="save-vehicle-btn" class="btn btn-success fw-bold" onclick="submitVehicleDetails()">Save Vehicle Details</button>
         
       </div>
@@ -2959,14 +2963,6 @@ async function submitVehicleDetails() {
    GATE IN / GATE OUT FUNCTIONS
 ========================================================= */
 
-window.punchGateIn = async function () {
-    await punchGateTime('punchGateIn');
-};
-
-window.punchGateOut = async function () {
-    await punchGateTime('punchGateOut');
-};
-
 async function punchGateTime(actionName) {
 
     const ro = document.getElementById('vehicle-ro').value.trim();
@@ -3097,6 +3093,29 @@ async function punchGateTime(actionName) {
         btn.innerHTML = oldText;
     }
 }
+
+/* =========================================================
+   BUTTON EVENT LISTENERS
+========================================================= */
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    const gateInBtn = document.getElementById('gate-in-btn');
+    const gateOutBtn = document.getElementById('gate-out-btn');
+
+    if (gateInBtn) {
+        gateInBtn.addEventListener('click', async () => {
+            await punchGateTime('punchGateIn');
+        });
+    }
+
+    if (gateOutBtn) {
+        gateOutBtn.addEventListener('click', async () => {
+            await punchGateTime('punchGateOut');
+        });
+    }
+
+});
     
 </script>
 
