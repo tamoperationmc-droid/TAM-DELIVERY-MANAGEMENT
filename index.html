@@ -1039,7 +1039,10 @@
 
       <div class="modal-footer">
         <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+        <button id="gate-in-btn" class="btn btn-outline-success fw-bold" onclick="punchGateIn()">🟢 Punch Gate In</button>
+        <button id="gate-out-btn" class="btn btn-outline-danger fw-bold" onclick="punchGateOut()">🔴 Punch Gate Out</button>
         <button id="save-vehicle-btn" class="btn btn-success fw-bold" onclick="submitVehicleDetails()">Save Vehicle Details</button>
+        
       </div>
     </div>
   </div>
@@ -1047,7 +1050,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwqUrhGFHzrTEayMMHca3iZOQ23BKcftRN1_qYO-n5cV0-qXoiCSzkydv7fJwzRLDY/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwiturCU9qVBy3SAeqMY969kH-CtaD1Y01f302KNz21uPl6OUda5J0bARxsqTeFD2B/exec";
     let masterData = [];
     let previousDataMap = new Map(); 
     let stagedSkus = [];
@@ -1574,7 +1577,12 @@
 
         const activeData = data.filter(row => {
             const status = String(row.STATUS_CLEAN || "").toUpperCase();
-            return status === "PENDING" || status === "IN-PROGRESS";
+            const gateOut = String(row.GATE_OUT_TIME || '').trim();
+        
+            // Hide only after Gate Out punched
+            if (gateOut) return false;
+        
+            return status === "PENDING" || status === "IN-PROGRESS" || status === "COMPLETE";
         });
 
         activeData.sort((a, b) => {
@@ -2855,7 +2863,7 @@ window.uploadDriveFile = async function () {
 
   reader.readAsDataURL(file);
 };
-function openVehicleModal() {
+async function openVehicleModal() {
   try {
     if (!currentlyEditingRO) {
       alert('Please open a shipment first.');
@@ -2874,13 +2882,29 @@ function openVehicleModal() {
     document.getElementById('vehicle-ctns').value = '';
     document.getElementById('vehicle-pin').value = '';
 
+    const result = await jsonpRequest({
+      action: 'getVehicleDetails',
+      ro: currentlyEditingRO
+    });
+
+    if (result.status === 'success' && result.data) {
+      document.getElementById('vehicle-no').value = result.data.vehicleNo || '';
+      document.getElementById('vehicle-type').value = result.data.vehicleType || '';
+      document.getElementById('vehicle-forwarder').value = result.data.forwarder || '';
+      document.getElementById('vehicle-driver').value = result.data.driverName || '';
+      document.getElementById('vehicle-contact').value = result.data.contactNo || '';
+      document.getElementById('vehicle-container').value = result.data.containerNo || '';
+      document.getElementById('vehicle-seal').value = result.data.sealNo || '';
+      document.getElementById('vehicle-cbm').value = result.data.cbm || '';
+      document.getElementById('vehicle-ctns').value = result.data.totalCtns || '';
+    }
+
     const modalEl = document.getElementById('vehicleDetailsModal');
     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
     modal.show();
 
   } catch (err) {
     alert('Vehicle window error: ' + err.message);
-    console.error(err);
   }
 }
 async function submitVehicleDetails() {
@@ -2928,6 +2952,101 @@ async function submitVehicleDetails() {
   } finally {
     btn.disabled = false;
     btn.innerHTML = 'Save Vehicle Details';
+  }
+}
+
+async function punchGateIn() {
+  await punchGateTime('punchGateIn');
+}
+
+async function punchGateTime(actionName) {
+  const ro = document.getElementById('vehicle-ro').value.trim();
+  const vehicleNo = document.getElementById('vehicle-no').value.trim();
+  const pin = document.getElementById('vehicle-pin').value.trim();
+
+  if (!ro) {
+    alert('RO No missing.');
+    return;
+  }
+
+  if (!vehicleNo) {
+    alert('Vehicle No is required.');
+    return;
+  }
+
+  if (!pin) {
+    alert('Staff PIN is required.');
+    return;
+  }
+
+  const isOut = actionName === 'punchGateOut';
+
+  if (isOut) {
+    const row = masterData.find(r => String(r.RO_VALUE || '').trim() === ro);
+
+    if (!row) {
+      alert('Shipment data not found. Please refresh and try again.');
+      return;
+    }
+
+    const loadingStatus = String(row.STATUS_CLEAN || '').toUpperCase();
+    const cusdecNo = String(row.COL_8 || '').trim();
+
+    if (loadingStatus !== 'COMPLETE') {
+      alert('Gate Out blocked. Loading status must be COMPLETE before Gate Out.');
+      return;
+    }
+
+    if (!cusdecNo) {
+      alert('Gate Out blocked. CUSDEC No is missing. Please update CUSDEC No first.');
+      return;
+    }
+
+    const ok = confirm(
+      'Please confirm Gate Out.\n\n' +
+      'RO: ' + ro + '\n' +
+      'Vehicle No: ' + vehicleNo + '\n' +
+      'CUSDEC No: ' + cusdecNo + '\n\n' +
+      'After Gate Out, this shipment will disappear from Active Dashboard.'
+    );
+
+    if (!ok) return;
+
+  } else {
+    if (!confirm('Confirm Gate In punch?')) return;
+  }
+
+  const btn = document.getElementById(isOut ? 'gate-out-btn' : 'gate-in-btn');
+  const oldText = btn.innerHTML;
+
+  btn.disabled = true;
+  btn.innerHTML = 'Punching...';
+
+  try {
+    const result = await jsonpRequest({
+      action: actionName,
+      ro: ro,
+      vehicleNo: vehicleNo,
+      pin: pin
+    });
+
+    if (result.status === 'success') {
+      alert(result.message || 'Punch successful.');
+
+      if (isOut) {
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('vehicleDetailsModal')).hide();
+        refreshAll();
+      }
+
+    } else {
+      alert(result.message || 'Punch failed.');
+    }
+
+  } catch (error) {
+    alert('Punch failed: ' + error.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = oldText;
   }
 }
 </script>
