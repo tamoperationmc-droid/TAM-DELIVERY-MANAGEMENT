@@ -1059,7 +1059,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwwiturCU9qVBy3SAeqMY969kH-CtaD1Y01f302KNz21uPl6OUda5J0bARxsqTeFD2B/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwmPj_AdjZnvTt0kxk6B-oJMb7l8f_XmeUWFxswD9K7HAEK7MoyvqvDddRCSMJofkc2/exec";
     let masterData = [];
     let previousDataMap = new Map(); 
     let stagedSkus = [];
@@ -2873,48 +2873,92 @@ window.uploadDriveFile = async function () {
   reader.readAsDataURL(file);
 };
 async function openVehicleModal() {
-  try {
-    if (!currentlyEditingRO) {
-      alert('Please open a shipment first.');
-      return;
+
+    try {
+
+        if (!currentlyEditingRO) {
+            alert('Please select a shipment first.');
+            return;
+        }
+
+        /* =========================================
+           RESET FORM
+        ========================================= */
+
+        document.getElementById('vehicle-ro').value = currentlyEditingRO;
+
+        document.getElementById('vehicle-no').value = '';
+        document.getElementById('vehicle-type').value = '';
+        document.getElementById('vehicle-forwarder').value = '';
+        document.getElementById('vehicle-driver').value = '';
+        document.getElementById('vehicle-contact').value = '';
+        document.getElementById('vehicle-container').value = '';
+        document.getElementById('vehicle-seal').value = '';
+        document.getElementById('vehicle-cbm').value = '';
+        document.getElementById('vehicle-ctns').value = '';
+
+        /* =========================================
+           LOAD SAVED DATA
+        ========================================= */
+
+        const result = await jsonpRequest({
+            action: 'getVehicleDetails',
+            ro: currentlyEditingRO
+        });
+
+        if (
+            result.status === 'success' &&
+            result.data
+        ) {
+
+            document.getElementById('vehicle-no').value =
+                result.data.vehicleNo || '';
+
+            document.getElementById('vehicle-type').value =
+                result.data.type || '';
+
+            document.getElementById('vehicle-forwarder').value =
+                result.data.forwarder || '';
+
+            document.getElementById('vehicle-driver').value =
+                result.data.driverName || '';
+
+            document.getElementById('vehicle-contact').value =
+                result.data.contactNo || '';
+
+            document.getElementById('vehicle-container').value =
+                result.data.containerNo || '';
+
+            document.getElementById('vehicle-seal').value =
+                result.data.sealNo || '';
+
+            document.getElementById('vehicle-cbm').value =
+                result.data.cbm || '';
+
+            document.getElementById('vehicle-ctns').value =
+                result.data.totalCtns || '';
+        }
+
+        /* =========================================
+           OPEN MODAL
+        ========================================= */
+
+        const modalEl =
+            document.getElementById('vehicleDetailsModal');
+
+        bootstrap.Modal
+            .getOrCreateInstance(modalEl)
+            .show();
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert(
+            'Unable to load vehicle details.\n\n' +
+            err.message
+        );
     }
-
-    document.getElementById('vehicle-ro').value = currentlyEditingRO;
-    document.getElementById('vehicle-no').value = '';
-    document.getElementById('vehicle-type').value = '';
-    document.getElementById('vehicle-forwarder').value = '';
-    document.getElementById('vehicle-driver').value = '';
-    document.getElementById('vehicle-contact').value = '';
-    document.getElementById('vehicle-container').value = '';
-    document.getElementById('vehicle-seal').value = '';
-    document.getElementById('vehicle-cbm').value = '';
-    document.getElementById('vehicle-ctns').value = '';
-    document.getElementById('vehicle-pin').value = '';
-
-    const result = await jsonpRequest({
-      action: 'getVehicleDetails',
-      ro: currentlyEditingRO
-    });
-
-    if (result.status === 'success' && result.data) {
-      document.getElementById('vehicle-no').value = result.data.vehicleNo || '';
-      document.getElementById('vehicle-type').value = result.data.vehicleType || '';
-      document.getElementById('vehicle-forwarder').value = result.data.forwarder || '';
-      document.getElementById('vehicle-driver').value = result.data.driverName || '';
-      document.getElementById('vehicle-contact').value = result.data.contactNo || '';
-      document.getElementById('vehicle-container').value = result.data.containerNo || '';
-      document.getElementById('vehicle-seal').value = result.data.sealNo || '';
-      document.getElementById('vehicle-cbm').value = result.data.cbm || '';
-      document.getElementById('vehicle-ctns').value = result.data.totalCtns || '';
-    }
-
-    const modalEl = document.getElementById('vehicleDetailsModal');
-    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-    modal.show();
-
-  } catch (err) {
-    alert('Vehicle window error: ' + err.message);
-  }
 }
 async function submitVehicleDetails() {
   const btn = document.getElementById('save-vehicle-btn');
@@ -2967,13 +3011,13 @@ async function submitVehicleDetails() {
    GATE IN / GATE OUT FUNCTIONS
 ========================================================= */
 
-function punchGateIn() {
-    return punchGateTime('punchGateIn');
-}
+window.punchGateIn = async function () {
+    await punchGateTime('punchGateIn');
+};
 
-function punchGateOut() {
-    return punchGateTime('punchGateOut');
-}
+window.punchGateOut = async function () {
+    await punchGateTime('punchGateOut');
+};
 
 async function punchGateTime(actionName) {
 
@@ -2998,10 +3042,6 @@ async function punchGateTime(actionName) {
 
     const isOut = actionName === 'punchGateOut';
 
-    /* =====================================================
-       GATE OUT VALIDATION
-    ===================================================== */
-
     if (isOut) {
 
         const row = masterData.find(r =>
@@ -3009,35 +3049,40 @@ async function punchGateTime(actionName) {
         );
 
         if (!row) {
-            alert('Shipment data not found. Please refresh and try again.');
+            alert('Shipment data not found.');
             return;
         }
 
-        const loadingStatus = String(row.STATUS_CLEAN || '').toUpperCase();
-        const cusdecNo = String(row.COL_8 || '').trim();
+        const loadingStatus =
+            String(row.STATUS_CLEAN || '').toUpperCase();
+
+        const cusdecNo =
+            String(row.COL_8 || '').trim();
 
         if (loadingStatus !== 'COMPLETE') {
+
             alert(
                 'Gate Out blocked.\n\n' +
-                'Loading status must be COMPLETE before Gate Out.'
+                'Loading must be COMPLETE.'
             );
+
             return;
         }
 
         if (!cusdecNo) {
+
             alert(
                 'Gate Out blocked.\n\n' +
-                'CUSDEC No is missing.'
+                'CUSDEC No missing.'
             );
+
             return;
         }
 
         const confirmOut = confirm(
             'CONFIRM GATE OUT\n\n' +
-            'RO No: ' + ro + '\n' +
-            'Vehicle No: ' + vehicleNo + '\n' +
-            'CUSDEC No: ' + cusdecNo + '\n\n' +
-            'After Gate Out, shipment will disappear from dashboard.\n\n' +
+            'RO: ' + ro + '\n' +
+            'Vehicle: ' + vehicleNo + '\n\n' +
             'Proceed?'
         );
 
@@ -3047,15 +3092,11 @@ async function punchGateTime(actionName) {
 
         const confirmIn = confirm(
             'Confirm Gate In?\n\n' +
-            'Vehicle No: ' + vehicleNo
+            vehicleNo
         );
 
         if (!confirmIn) return;
     }
-
-    /* =====================================================
-       BUTTON STATE
-    ===================================================== */
 
     const btn = document.getElementById(
         isOut ? 'gate-out-btn' : 'gate-in-btn'
@@ -3065,10 +3106,6 @@ async function punchGateTime(actionName) {
 
     btn.disabled = true;
     btn.innerHTML = 'Processing...';
-
-    /* =====================================================
-       API REQUEST
-    ===================================================== */
 
     try {
 
