@@ -1039,10 +1039,15 @@
 
       <div class="modal-footer">
         <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-        <button id="gate-in-btn" class="btn btn-outline-success fw-bold">
-            🟢 Punch Gate In
+        <button id="gate-in-btn"
+                class="btn btn-outline-success fw-bold"
+                onclick="punchGateIn()">
+             🟢 Punch Gate In
         </button>
-        <button id="gate-out-btn" class="btn btn-outline-danger fw-bold" >
+
+        <button id="gate-out-btn"
+                class="btn btn-outline-danger fw-bold"
+                onclick="punchGateOut()">
             🔴 Punch Gate Out
         </button>
         <button id="save-vehicle-btn" class="btn btn-success fw-bold" onclick="submitVehicleDetails()">Save Vehicle Details</button>
@@ -2958,10 +2963,17 @@ async function submitVehicleDetails() {
     btn.innerHTML = 'Save Vehicle Details';
   }
 }
-
 /* =========================================================
    GATE IN / GATE OUT FUNCTIONS
 ========================================================= */
+
+function punchGateIn() {
+    return punchGateTime('punchGateIn');
+}
+
+function punchGateOut() {
+    return punchGateTime('punchGateOut');
+}
 
 async function punchGateTime(actionName) {
 
@@ -3005,12 +3017,18 @@ async function punchGateTime(actionName) {
         const cusdecNo = String(row.COL_8 || '').trim();
 
         if (loadingStatus !== 'COMPLETE') {
-            alert('Gate Out blocked.\n\nLoading status must be COMPLETE before Gate Out.');
+            alert(
+                'Gate Out blocked.\n\n' +
+                'Loading status must be COMPLETE before Gate Out.'
+            );
             return;
         }
 
         if (!cusdecNo) {
-            alert('Gate Out blocked.\n\nCUSDEC No is missing.');
+            alert(
+                'Gate Out blocked.\n\n' +
+                'CUSDEC No is missing.'
+            );
             return;
         }
 
@@ -3019,7 +3037,7 @@ async function punchGateTime(actionName) {
             'RO No: ' + ro + '\n' +
             'Vehicle No: ' + vehicleNo + '\n' +
             'CUSDEC No: ' + cusdecNo + '\n\n' +
-            'After Gate Out, this shipment will disappear from Active Dashboard.\n\n' +
+            'After Gate Out, shipment will disappear from dashboard.\n\n' +
             'Proceed?'
         );
 
@@ -3028,8 +3046,8 @@ async function punchGateTime(actionName) {
     } else {
 
         const confirmIn = confirm(
-            'Confirm Gate In for vehicle:\n\n' +
-            vehicleNo + ' ?'
+            'Confirm Gate In?\n\n' +
+            'Vehicle No: ' + vehicleNo
         );
 
         if (!confirmIn) return;
@@ -3049,7 +3067,7 @@ async function punchGateTime(actionName) {
     btn.innerHTML = 'Processing...';
 
     /* =====================================================
-       API CALL
+       API REQUEST
     ===================================================== */
 
     try {
@@ -3067,7 +3085,8 @@ async function punchGateTime(actionName) {
 
             if (isOut) {
 
-                const modalEl = document.getElementById('vehicleDetailsModal');
+                const modalEl =
+                    document.getElementById('vehicleDetailsModal');
 
                 bootstrap.Modal
                     .getOrCreateInstance(modalEl)
@@ -3085,7 +3104,10 @@ async function punchGateTime(actionName) {
 
         console.error(error);
 
-        alert('Operation failed:\n\n' + error.message);
+        alert(
+            'Operation failed.\n\n' +
+            error.message
+        );
 
     } finally {
 
@@ -3093,29 +3115,6 @@ async function punchGateTime(actionName) {
         btn.innerHTML = oldText;
     }
 }
-
-/* =========================================================
-   BUTTON EVENT LISTENERS
-========================================================= */
-
-document.addEventListener('DOMContentLoaded', () => {
-
-    const gateInBtn = document.getElementById('gate-in-btn');
-    const gateOutBtn = document.getElementById('gate-out-btn');
-
-    if (gateInBtn) {
-        gateInBtn.addEventListener('click', async () => {
-            await punchGateTime('punchGateIn');
-        });
-    }
-
-    if (gateOutBtn) {
-        gateOutBtn.addEventListener('click', async () => {
-            await punchGateTime('punchGateOut');
-        });
-    }
-
-});
     
 </script>
 
