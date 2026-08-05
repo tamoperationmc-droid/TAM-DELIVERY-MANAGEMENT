@@ -1509,6 +1509,27 @@
             setTimeout(() => refreshIcon && refreshIcon.classList.remove('refresh-spin'), 650);
         }
 
+        if (response.maintenance) {
+            document.body.innerHTML = `
+                <div style="
+                    height:100vh;
+                    display:flex;
+                    flex-direction:column;
+                    justify-content:center;
+                    align-items:center;
+                    background:#f8f9fa;
+                    font-family:Arial,sans-serif;
+                    text-align:center;
+                    padding:40px;
+                ">
+                    <h1>🚧 ${response.title}</h1>
+                    <p>${response.message}</p>
+                    <p><strong>Expected Finish:</strong> ${response.expectedFinish}</p>
+                </div>
+            `;
+            return;
+        }
+
         if (loadingIndicator) loadingIndicator.style.display = 'inline-block';
         if (pendingBadge) pendingBadge.textContent = 'Loading...';
 
