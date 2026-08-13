@@ -391,14 +391,6 @@
             color: #d0d0d0 !important;
             border-color: #3a4a62 !important;
         }
-
-        .finishTime{
-            font-size:24px;
-            font-weight:bold;
-            color:#1565c0;
-            margin:20px 0;
-        }
-        
     </style>
 </head>
 <body class="light-mode">
@@ -1067,7 +1059,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwrbaQG4uQ-olK_0MrYEwwCa_8Gy9oJSoYfuxqvjnIGF7R5xGWfUEay_vgIrxKJP4Q/exec"
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwr74vvu6-_PUlv3GXfObO_VgyWh-BLTnq5iEsBxF-JZtCuWqkPwOlVTYVqemzkCIGD/exec"
     let masterData = [];
     let previousDataMap = new Map(); 
     let stagedSkus = [];
@@ -1082,31 +1074,6 @@
 
     // Apps Script JSONP request helper.
     // This prevents CORS/Failed to fetch errors when the page is hosted on GitHub Pages or opened locally.
-    function showMaintenanceScreen(data){
-    document.body.innerHTML=`
-    <div id="maintenancePage">
-        <div class="maintenance-card">
-            <div class="icon">
-                🛠️
-            </div>
-            <h1>${data.title}</h1>
-            <p>${data.message}</p>
-            <h3>
-                Expected Completion
-            </h3>
-            <div class="finishTime">
-                ${data.expectedFinish}
-            </div>
-            <div class="loader"></div>
-            <p>
-                Please wait...
-            </p>
-        </div>
-    </div>
-    `;
-    }
-
-    
     function jsonpRequest(params = {}) {
         return new Promise((resolve, reject) => {
             const callbackName = 'tdms_cb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
@@ -1507,27 +1474,6 @@
         if (refreshIcon) {
             refreshIcon.classList.add('refresh-spin');
             setTimeout(() => refreshIcon && refreshIcon.classList.remove('refresh-spin'), 650);
-        }
-
-        if (response.maintenance) {
-            document.body.innerHTML = `
-                <div style="
-                    height:100vh;
-                    display:flex;
-                    flex-direction:column;
-                    justify-content:center;
-                    align-items:center;
-                    background:#f8f9fa;
-                    font-family:Arial,sans-serif;
-                    text-align:center;
-                    padding:40px;
-                ">
-                    <h1>🚧 ${response.title}</h1>
-                    <p>${response.message}</p>
-                    <p><strong>Expected Finish:</strong> ${response.expectedFinish}</p>
-                </div>
-            `;
-            return;
         }
 
         if (loadingIndicator) loadingIndicator.style.display = 'inline-block';
