@@ -5,11 +5,17 @@
 
 // ==================== CONFIGURATION ====================
 const API_CONFIG = {
-  // Replace with your Google Apps Script deployment URL
-  BASE_URL: 'https://script.google.com/macros/d/{AKfycbwrbaQG4uQ-olK_0MrYEwwCa_8Gy9oJSoYfuxqvjnIGF7R5xGWfUEay_vgIrxKJP4Q}/usercache?',
-  // Fallback for testing - update after deployment
-  BACKEND_URL: localStorage.getItem('backendUrl') || 'https://script.google.com/macros/d/AKfycbwrbaQG4uQ-olK_0MrYEwwCa_8Gy9oJSoYfuxqvjnIGF7R5xGWfUEay_vgIrxKJP4Q/usercache?'
+  // Google Apps Script deployment URL - REMOVE trailing /usercache? and the question mark
+  BACKEND_URL: 'https://script.google.com/macros/d/AKfycbwrbaQG4uQ-olK_0MrYEwwCa_8Gy9oJSoYfuxqvjnIGF7R5xGWfUEay_vgIrxKJP4Q/usercache'
 };
+
+// Display backend URL on page
+document.addEventListener('DOMContentLoaded', () => {
+  const backendUrlSpan = document.getElementById('drive-backend-url');
+  if (backendUrlSpan) {
+    backendUrlSpan.textContent = API_CONFIG.BACKEND_URL;
+  }
+});
 
 // Global state
 let globalData = {
@@ -30,37 +36,68 @@ let globalData = {
  */
 async function callBackend(action, params = {}) {
   try {
+    // Build the URL with proper query parameters
     const url = new URL(API_CONFIG.BACKEND_URL);
-    url.searchParams.append('action', action);
     
+    // Add action parameter
+    if (action) {
+      url.searchParams.append('action', action);
+    }
+    
+    // Add all other parameters
     Object.keys(params).forEach(key => {
-      url.searchParams.append(key, params[key]);
+      const value = params[key];
+      if (value !== null && value !== undefined) {
+        url.searchParams.append(key, String(value));
+      }
     });
 
-    // Add callback for JSONP
+    // Add JSONP callback for cross-origin requests
     const callbackName = 'jsonpCallback_' + Math.random().toString(36).substr(2, 9);
     url.searchParams.append('callback', callbackName);
 
+    console.log('🔗 Calling backend:', url.toString());
+
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      
-      window[callbackName] = (response) => {
+      let timeoutId;
+
+      // Set timeout for request
+      timeoutId = setTimeout(() => {
         delete window[callbackName];
         document.head.removeChild(script);
+        reject(new Error('Backend request timeout'));
+      }, 15000); // 15 second timeout
+
+      // Setup callback
+      window[callbackName] = (response) => {
+        clearTimeout(timeoutId);
+        delete window[callbackName];
+        try {
+          document.head.removeChild(script);
+        } catch (e) {}
+        console.log('✅ Backend response:', response);
         resolve(response);
       };
 
+      // Handle script load error
       script.onerror = () => {
+        clearTimeout(timeoutId);
         delete window[callbackName];
-        document.head.removeChild(script);
-        reject(new Error('Backend request failed'));
+        try {
+          document.head.removeChild(script);
+        } catch (e) {}
+        console.error('❌ Script load error for action:', action);
+        reject(new Error('Backend request failed - script load error'));
       };
 
+      // Set script source and append
       script.src = url.toString();
+      script.async = true;
       document.head.appendChild(script);
     });
   } catch (err) {
-    console.error('Backend call error:', err);
+    console.error('❌ Backend call error:', err);
     return { status: 'error', message: err.message };
   }
 }
@@ -132,7 +169,9 @@ function showToast(message, type = 'info') {
  * Initialize the application
  */
 async function initApp() {
-  console.log('Initializing TAM Dashboard...');
+  console.log('🚀 Initializing TAM Dashboard...');
+  console.log('📍 Backend URL:', API_CONFIG.BACKEND_URL);
+  
   await refreshAll();
   
   // Update motion ribbon
@@ -140,6 +179,7 @@ async function initApp() {
   
   // Setup periodic refresh (every 5 minutes)
   setInterval(() => {
+    console.log('🔄 Auto-refreshing data...');
     refreshAll();
   }, 5 * 60 * 1000);
 }
@@ -154,17 +194,28 @@ async function refreshAll() {
       loadingIcon.classList.add('refresh-spin');
     }
 
-    // Fetch operational data
+    console.log('📡 Fetching operational data from backend...');
+    
+    // Fetch operational data with empty action (default handler)
     const response = await callBackend('', {});
+    
+    console.log('📊 Response received:', response);
     
     if (response && response.opsData) {
       globalData.opsData = response.opsData || [];
       
+      console.log('✅ Data loaded. Total rows:', globalData.opsData.length);
+      
       // Separate into categories
       globalData.allDeliveries = globalData.opsData;
-      globalData.exportDeliveries = globalData.opsData.filter(r => r.TYPE_VALUE === 'LCL' || r.TYPE_VALUE === 'FCL' || r.TYPE_VALUE === 'AIR' || r.TYPE_VALUE === 'CONSOLE' || r.TYPE_VALUE === 'COURIER');
+      globalData.exportDeliveries = globalData.opsData.filter(r => 
+        r.TYPE_VALUE === 'LCL' || r.TYPE_VALUE === 'FCL' || r.TYPE_VALUE === 'AIR' || 
+        r.TYPE_VALUE === 'CONSOLE' || r.TYPE_VALUE === 'COURIER'
+      );
       globalData.localDeliveries = globalData.opsData.filter(r => r.TYPE_VALUE === 'LOCAL');
       globalData.completedDeliveries = globalData.opsData.filter(r => r.STATUS_CLEAN === 'COMPLETE');
+      
+      console.log('📈 Breakdown - Export:', globalData.exportDeliveries.length, 'Local:', globalData.localDeliveries.length, 'Completed:', globalData.completedDeliveries.length);
       
       // Render all sections
       renderPendingDeliveries();
@@ -177,14 +228,17 @@ async function refreshAll() {
       if (lastUpdated) {
         lastUpdated.textContent = 'Last updated: ' + new Date().toLocaleString();
       }
+    } else {
+      console.warn('⚠�� No data in response or response is empty');
+      showToast('⚠️ No data received from backend', 'info');
     }
 
     if (loadingIcon) {
       loadingIcon.classList.remove('refresh-spin');
     }
   } catch (err) {
-    console.error('Refresh error:', err);
-    showToast('Failed to refresh data', 'error');
+    console.error('❌ Refresh error:', err);
+    showToast('Failed to refresh data: ' + err.message, 'error');
   }
 }
 
@@ -193,14 +247,18 @@ async function refreshAll() {
  */
 async function testDriveBackend() {
   try {
+    console.log('🧪 Testing backend connection...');
     const response = await callBackend('testConnection', {});
+    console.log('Test response:', response);
+    
     if (response && response.status === 'success') {
       showToast('✅ Backend is working!', 'success');
     } else {
-      showToast('❌ Backend connection failed', 'error');
+      showToast('❌ Backend connection failed: ' + (response?.message || 'Unknown error'), 'error');
     }
   } catch (err) {
-    showToast('❌ Cannot reach backend', 'error');
+    console.error('Test error:', err);
+    showToast('❌ Cannot reach backend: ' + err.message, 'error');
   }
 }
 
@@ -495,9 +553,7 @@ async function submitUpdate() {
  * Open new order modal
  */
 function openNewOrderModal() {
-  const modal = new bootstrap.Modal(document.getElementById('newOrderModal') || document.createElement('div'));
   showToast('New order creation - Backend integration required', 'info');
-  // Implementation depends on newOrderModal structure in HTML
 }
 
 /**
@@ -781,6 +837,8 @@ function openVehicleModal() {
 // ==================== INITIALIZE ON LOAD ====================
 
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('📄 DOM Content Loaded - Starting app initialization');
+  
   // Restore dark mode preference
   if (localStorage.getItem('darkMode') === 'true') {
     document.body.classList.add('dark-mode');
@@ -793,4 +851,4 @@ document.addEventListener('DOMContentLoaded', () => {
   loadDriveTabFiles('Export Docs');
 });
 
-console.log('✅ TAM Dashboard app.js loaded successfully');
+console.log('✅ app.js loaded successfully');
