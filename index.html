@@ -24,7 +24,7 @@
         .progress-row:hover { background: #e8f5e9 !important; transform: scale(1.01); }
 
         .cutoff-text { color: #d32f2f; font-weight: bold; font-size: 0.9rem; }
-        .facility-tag { background: #e8f0fe; color: #1967d2; padding: 3px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; display: inline-block; margin-bottom: 5px; border: 1px solid rgba(25,103,210,0.12); }
+        .facility-tag { background: #e8f0fe; color: #1967d2; padding: 3px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; display: inline-block; margin-bottom: 5px; border: 1px solid #1967d2; }
         .status-badge { font-size: 0.75rem; padding: 3px 10px; border-radius: 6px; font-weight: bold; margin-right: 5px; border: 1px solid transparent; }
         
         .bg-pending { background-color: #fce8e6; color: #d93025; border-color: #f1998e; }
@@ -54,12 +54,11 @@
         .export-filter-btn { min-width: 88px; border-radius: 20px; font-weight: 600; font-size: 0.75rem; }
 
         body.dark-mode { background-color: #1a1a1a !important; color: #d0d0d0 !important; }
-        /* Additional dark-mode styles omitted for brevity but kept in original file if needed */
 
         /* Motion ribbon styles */
         .motion-ribbon { overflow: hidden; background: linear-gradient(90deg,#0b57a4,#1a73e8); color: #fff; padding: 8px 0; border-radius: 8px; margin: 12px 0; }
         .ribbon-track { display: inline-flex; gap: 16px; white-space: nowrap; will-change: transform; padding-left: 100%; animation: ribbon-scroll 20s linear infinite; }
-        .ribbon-item { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.06); padding: 6px 12px; border-radius: 18px; font-size: 0.86rem; border: 1px solid rgba(255,255,255,0.08); }
+        .ribbon-item { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.06); padding: 6px 12px; border-radius: 18px; font-size: 0.86rem; border: 1px solid rgba(255,255,255,0.2); }
         @keyframes ribbon-scroll { 0% { transform: translateX(0%); } 100% { transform: translateX(-100%); } }
 
         footer { background: #1a3a52; color: white; padding: 20px; text-align: center; margin-top: 30px; border-top: 1px solid #3a5a72; font-weight: 500; letter-spacing: 0.5px; font-size: 0.85rem; }
@@ -84,8 +83,8 @@
 <div class="container-fluid">
     <div class="motion-ribbon">
         <div id="ribbon-track" class="ribbon-track" aria-hidden="true">
-            <!-- Items are injected by script -->
-            <div class="ribbon-item">No active deliveries</div>
+            <!-- Items are injected by app.js -->
+            <div class="ribbon-item">Loading deliveries...</div>
         </div>
     </div>
 </div>
@@ -183,11 +182,11 @@
                                 <button class="btn btn-sm btn-outline-secondary" onclick="setDriveFolder('Export Docs')">Export Docs</button>
                                 <button class="btn btn-sm btn-outline-secondary" onclick="setDriveFolder('RO')">RO</button>
                                 <input id="drive-search-input" type="text" class="form-control form-control-sm" style="max-width:240px;" placeholder="Search files..." onkeyup="onDriveSearch()">
-                                <button class="btn btn-sm btn-success" onclick="loadDriveTabFiles(driveFolderName)">Refresh</button>
+                                <button class="btn btn-sm btn-success" onclick="loadDriveTabFiles(globalData.driveFolderName)">Refresh</button>
                                 <button class="btn btn-sm btn-outline-info" onclick="testDriveBackend()">Check connection</button>
                             </div>
                         </div>
-                        <div id="drive-status-message" class="small text-muted mt-2">Backend URL: <span id="drive-backend-url"></span></div>
+                        <div id="drive-status-message" class="small text-muted mt-2">Backend URL: <span id="drive-backend-url">Loading...</span></div>
                         <div id="drive-files-container"><div class="text-center text-muted mt-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div></div>
                     </div>
                 </div>
@@ -195,12 +194,12 @@
                     <div class="section-card mb-3">
                         <h6 class="fw-bold mb-3">Upload File</h6>
                         <div class="mb-3"><label class="data-label">Folder</label><select id="drive-upload-folder" class="form-select form-select-sm"><option value="Export Docs">Export Docs</option><option value="RO">RO</option></select></div>
-                        <div class="mb-3"><label class="data-label">Choose file</label><input id="drive-upload-file" type="file" class="form-control form-control-sm" accept=".pdf, .xlsx, .xls, .csv, .docx"></div>
+                        <div class="mb-3"><label class="data-label">Choose file</label><input id="drive-upload-file" type="file" class="form-control form-control-sm" accept=".pdf, .xlsx, .xls, .csv, .doc, .docx"></div>
                         <button class="btn btn-primary btn-sm w-100" onclick="uploadDriveFile()">Upload to Drive</button>
                     </div>
                     <div class="section-card">
                         <h6 class="fw-bold mb-3">Share / Download</h6>
-                        <div class="mb-3"><label class="data-label">Selected file ID</label><input id="drive-share-file-id" type="text" class="form-control form-control-sm" placeholder="Paste file ID"></div>
+                        <div class="mb-3"><label class="data-label">Selected file ID</label><input id="drive-share-file-id" type="text" class="form-control form-control-sm" placeholder="Paste file ID here"></div>
                         <div class="mb-3"><label class="data-label">Email to share</label><input id="drive-share-email" type="email" class="form-control form-control-sm" placeholder="user@example.com"></div>
                         <div class="mb-3"><label class="data-label">Role</label><select id="drive-share-role" class="form-select form-select-sm"><option value="viewer">Viewer</option><option value="editor">Editor</option></select></div>
                         <button class="btn btn-info btn-sm w-100 mb-2" onclick="shareDriveFile()">Share File</button>
@@ -213,10 +212,7 @@
     </div>
 </div>
 
-<!-- Modals (itemModal, newOrderModal, completeShipmentsModal, completeReportModal, vehicleDetailsModal) -->
-<!-- Kept same structure as original but removed truncated text and placeholders -->
-
-<!-- Example: itemModal (shortened for clarity) -->
+<!-- Item Modal -->
 <div class="modal fade" id="itemModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content shadow-lg" style="border-radius: 15px;">
@@ -225,7 +221,6 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <!-- Modal body content preserved from original file -->
                 <div class="mb-3">
                     <button class="btn btn-outline-primary btn-sm w-100 fw-bold mb-2 shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#updateFormCollapse">⚙️ Update Shipment Info</button>
                     <button class="btn btn-outline-success btn-sm w-100 fw-bold mb-2 shadow-sm" type="button" onclick="openVehicleModal()">🚛 Add Vehicle Details</button>
@@ -234,113 +229,32 @@
                             <div class="row g-2">
                                 <div class="col-6 col-md-4"><label class="data-label">Destination</label><input type="text" id="edit-dest" class="form-control form-control-sm"></div>
                                 <div class="col-6 col-md-4"><label class="data-label">Vendor</label><input type="text" id="edit-vendor" class="form-control form-control-sm"></div>
-                                <div class="col-6 col-md-4"><label class="data-label">Shipment Type</label><select id="edit-shiptype" class="form-select form-select-sm"><option value="LCL">LCL</option><option value="FCL">FCL</option></select></div>
-                                <div class="col-6 col-md-4"><label class="data-label">Loading Facility</label><select id="edit-facility" class="form-select form-select-sm"><option value="VN">VN</option></select></div>
-                                <div class="col-6 col-md-4"><label class="data-label">Invoice/PL</label><select id="edit-invoice" class="form-select form-select-sm"><option value="PENDING">PENDING</option></select></div>
-                                <div class="col-6 col-md-4"><label class="data-label">Cusdec Status</label><select id="edit-cusdec-status" class="form-select form-select-sm"><option value="PENDING">PENDING</option></select></div>
+                                <div class="col-6 col-md-4"><label class="data-label">Shipment Type</label><select id="edit-shiptype" class="form-select form-select-sm"><option value="LCL">LCL</option><option value="FCL">FCL</option><option value="AIR">AIR</option><option value="LOCAL">LOCAL</option></select></div>
+                                <div class="col-6 col-md-4"><label class="data-label">Loading Facility</label><select id="edit-facility" class="form-select form-select-sm"><option value="VN">VN</option><option value="HN">HN</option><option value="HCMC">HCMC</option></select></div>
+                                <div class="col-6 col-md-4"><label class="data-label">Invoice/PL</label><select id="edit-invoice" class="form-select form-select-sm"><option value="PENDING">PENDING</option><option value="RECEIVED">RECEIVED</option><option value="PROCESSED">PROCESSED</option></select></div>
+                                <div class="col-6 col-md-4"><label class="data-label">Cusdec Status</label><select id="edit-cusdec-status" class="form-select form-select-sm"><option value="PENDING">PENDING</option><option value="APPROVED">APPROVED</option><option value="REJECTED">REJECTED</option></select></div>
                                 <div class="col-12 col-md-4"><label class="data-label">Cusdec No</label><input type="text" id="edit-cusdec-no" class="form-control form-control-sm"></div>
                                 <div class="col-12"><label class="data-label">Note</label><textarea id="edit-note" class="form-control form-control-sm" rows="2" placeholder="Notes..."></textarea></div>
                                 <div class="col-6 col-md-4"><label class="data-label text-danger fw-bold">Cutoff</label><input type="text" id="edit-cutoff" class="form-control form-control-sm border-danger"></div>
-                                <div class="col-6 col-md-4"><label class="data-label fw-bold text-danger">Status</label><select id="edit-loading-status" class="form-select form-select-sm border-danger"><option value="PENDING">PENDING</option></select></div>
+                                <div class="col-6 col-md-4"><label class="data-label fw-bold text-danger">Status</label><select id="edit-loading-status" class="form-select form-select-sm border-danger"><option value="PENDING">PENDING</option><option value="IN-PROGRESS">IN-PROGRESS</option><option value="COMPLETE">COMPLETE</option></select></div>
                                 <div class="col-12 col-md-4"><label class="data-label text-primary fw-bold">STAFF PIN 🔐</label><input type="password" id="staff-pin" class="form-control form-control-sm"></div>
-                                <div class="col-md-12 text-end mt-2"><button id="update-btn" onclick="submitUpdate()" class="btn btn-primary btn-sm fw-bold px-4 w-100" style="background:#1a3a52; border-color:#0f3245;">Update</button></div>
+                                <div class="col-md-12 text-end mt-2"><button id="update-btn" onclick="submitUpdate()" class="btn btn-primary btn-sm fw-bold px-4 w-100" style="background:#1a3a52; border: none;">✅ Update Order</button></div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="d-flex justify-content-between align-items-center mb-2"><h6 class="fw-bold small text-muted mb-0">ITEM BREAKDOWN</h6><input type="text" id="skuSearch" class="form-control form-control-sm" style="max-width: 220px;" placeholder="Search SKU..."></div>
-                <div class="table-responsive" style="max-height: 250px;"><table class="table table-hover table-sm small mb-0"><thead class="table-light sticky-top"><tr><th class="ps-3">Product Code</th><th>Qty</th><th>Desc</th></tr></thead><tbody id="item-breakdown"></tbody></table></div>
-
             </div>
         </div>
     </div>
 </div>
 
-<!-- NOTE: Other modals (newOrderModal, completeShipmentsModal, completeReportModal, vehicleDetailsModal) should be present in the file. For brevity in this commit they remain unchanged structurally -->
-
-<footer>© TAM Delivery Management</footer>
+<footer>© TAM Delivery Management | Backend Connected ✓</footer>
 
 <!-- Add Bootstrap JS bundle (includes Popper) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Lightweight app fallbacks and motion ribbon population -->
-<script>
-(function(){
-  // No-op stubs for functions referenced in HTML to avoid runtime errors
-  const noop = name => function(){ console.log(name + ' called (noop)'); };
-  const fns = [
-    'openNewOrderModal','openCompleteShipmentsModal','exportToExcel','refreshAll','toggleDarkMode',
-    'manualClearFeed','setExportTypeFilter','setDriveFolder','onDriveSearch','loadDriveTabFiles',
-    'testDriveBackend','uploadDriveFile','shareDriveFile','downloadSelectedDriveFile',
-    'openVehicleModal','submitUpdate'
-  ];
-  fns.forEach(name => { if(typeof window[name] === 'undefined') window[name] = noop(name); });
-
-  function populateMotionRibbon(){
-    const track = document.getElementById('ribbon-track');
-    if(!track) return;
-
-    // Clear existing
-    track.innerHTML = '';
-
-    // Prefer structured data if provided by the app: window.DELIVERIES should be an array of objects
-    // Example item: { ro: 'RO123', cusdec: 'CUS123', vehicle: 'AB-1234', destination: 'Colombo', status: 'PENDING' }
-    const deliveries = Array.isArray(window.DELIVERIES) ? window.DELIVERIES : [];
-
-    if(deliveries.length === 0){
-      // Try to extract some quick info from DOM (if rows are rendered with data attributes)
-      const domItems = document.querySelectorAll('[data-ro]');
-      domItems.forEach(el => {
-        const item = {
-          ro: el.getAttribute('data-ro') || '',
-          cusdec: el.getAttribute('data-cusdec') || '',
-          vehicle: el.getAttribute('data-vehicle') || '',
-          destination: el.getAttribute('data-destination') || ''
-        };
-        deliveries.push(item);
-      });
-    }
-
-    if(deliveries.length === 0){
-      const div = document.createElement('div');
-      div.className = 'ribbon-item';
-      div.textContent = 'No active deliveries';
-      track.appendChild(div);
-      return;
-    }
-
-    // Create ribbon items for each delivery. Duplicate the sequence to create a smooth loop if few items
-    const items = deliveries.slice(0);
-    if(items.length < 6) items.push(...deliveries.slice(0));
-
-    items.forEach(d => {
-      const div = document.createElement('div');
-      div.className = 'ribbon-item';
-      const parts = [];
-      if(d.ro) parts.push('\uD83D\uDCCB ' + d.ro);
-      if(d.cusdec) parts.push('📑 ' + d.cusdec);
-      if(d.vehicle) parts.push('🚚 ' + d.vehicle);
-      if(d.destination) parts.push('📍 ' + d.destination);
-      if(parts.length === 0) div.textContent = '• Unknown delivery';
-      else div.textContent = parts.join(' • ');
-      track.appendChild(div);
-    });
-  }
-
-  // Initialize UI
-  function init(){
-    const last = document.getElementById('last-updated');
-    if (last) last.textContent = 'Last updated: ' + new Date().toLocaleString();
-    populateMotionRibbon();
-    // Re-populate periodically in case window.DELIVERIES is set later
-    setInterval(populateMotionRibbon, 5000);
-  }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-  else init();
-})();
-</script>
+<!-- Load the main application file -->
+<script src="app.js"></script>
 
 </body>
 </html>
