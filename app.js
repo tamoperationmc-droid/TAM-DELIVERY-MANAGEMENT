@@ -5,8 +5,8 @@
 
 // ==================== CONFIGURATION ====================
 const API_CONFIG = {
-  // Google Apps Script deployment URL - REMOVE trailing /usercache? and the question mark
-  BACKEND_URL: 'https://script.google.com/macros/d/AKfycbwrbaQG4uQ-olK_0MrYEwwCa_8Gy9oJSoYfuxqvjnIGF7R5xGWfUEay_vgIrxKJP4Q/usercache'
+  // Google Apps Script deployment URL - Using /exec endpoint (not /usercache)
+  BACKEND_URL: 'https://script.google.com/macros/s/AKfycbwrbaQG4uQ-olK_0MrYEwwCa_8Gy9oJSoYfuxqvjnIGF7R5xGWfUEay_vgIrxKJP4Q/exec'
 };
 
 // Display backend URL on page
@@ -65,8 +65,10 @@ async function callBackend(action, params = {}) {
       // Set timeout for request
       timeoutId = setTimeout(() => {
         delete window[callbackName];
-        document.head.removeChild(script);
-        reject(new Error('Backend request timeout'));
+        try {
+          document.head.removeChild(script);
+        } catch (e) {}
+        reject(new Error('Backend request timeout (15s)'));
       }, 15000); // 15 second timeout
 
       // Setup callback
@@ -88,7 +90,7 @@ async function callBackend(action, params = {}) {
           document.head.removeChild(script);
         } catch (e) {}
         console.error('❌ Script load error for action:', action);
-        reject(new Error('Backend request failed - script load error'));
+        reject(new Error('Backend request failed - script load error. Check console for CORS issues.'));
       };
 
       // Set script source and append
@@ -229,7 +231,7 @@ async function refreshAll() {
         lastUpdated.textContent = 'Last updated: ' + new Date().toLocaleString();
       }
     } else {
-      console.warn('⚠�� No data in response or response is empty');
+      console.warn('⚠️ No data in response or response is empty');
       showToast('⚠️ No data received from backend', 'info');
     }
 
