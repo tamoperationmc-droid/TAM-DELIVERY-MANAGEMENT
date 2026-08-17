@@ -6,9 +6,9 @@
 // ==================== CONFIGURATION ====================
 const API_CONFIG = {
   // Replace with your Google Apps Script deployment URL
-  BASE_URL: 'https://script.google.com/macros/d/{DEPLOYMENT_ID}/usercache?',
+  BASE_URL: 'https://script.google.com/macros/d/{AKfycbwrbaQG4uQ-olK_0MrYEwwCa_8Gy9oJSoYfuxqvjnIGF7R5xGWfUEay_vgIrxKJP4Q}/usercache?',
   // Fallback for testing - update after deployment
-  BACKEND_URL: localStorage.getItem('backendUrl') || 'https://script.google.com/macros/d/YOUR_DEPLOYMENT_ID/usercache?'
+  BACKEND_URL: localStorage.getItem('backendUrl') || 'https://script.google.com/macros/d/AKfycbwrbaQG4uQ-olK_0MrYEwwCa_8Gy9oJSoYfuxqvjnIGF7R5xGWfUEay_vgIrxKJP4Q/usercache?'
 };
 
 // Global state
