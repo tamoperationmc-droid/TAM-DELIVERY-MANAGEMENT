@@ -190,29 +190,28 @@ async function initApp() {
  * Refresh all dashboard data
  */
 async function refreshAll() {
-  try {
-    const loadingIcon = document.getElementById('refresh-icon');
-    if (loadingIcon) {
-      loadingIcon.classList.add('refresh-spin');
-    }
+  const loadingIcon = document.getElementById('refresh-icon');
+  if (loadingIcon) {
+    loadingIcon.classList.add('refresh-spin');
+  }
 
+  try {
     console.log('📡 Fetching operational data from backend...');
     
     // Fetch operational data with empty action (default handler)
     const response = await callBackend('', {});
-    
     console.log('📊 Response received:', response);
-    
-    if (response && response.opsData) {
-      globalData.opsData = response.opsData || [];
+
+    // Validate that response.opsData exists and is strictly an Array
+    if (response && Array.isArray(response.opsData)) {
+      globalData.opsData = response.opsData;
       
       console.log('✅ Data loaded. Total rows:', globalData.opsData.length);
       
-      // Separate into categories
+      // Separate into categories safely
       globalData.allDeliveries = globalData.opsData;
       globalData.exportDeliveries = globalData.opsData.filter(r => 
-        r.TYPE_VALUE === 'LCL' || r.TYPE_VALUE === 'FCL' || r.TYPE_VALUE === 'AIR' || 
-        r.TYPE_VALUE === 'CONSOLE' || r.TYPE_VALUE === 'COURIER'
+        ['LCL', 'FCL', 'AIR', 'CONSOLE', 'COURIER'].includes(r.TYPE_VALUE)
       );
       globalData.localDeliveries = globalData.opsData.filter(r => r.TYPE_VALUE === 'LOCAL');
       globalData.completedDeliveries = globalData.opsData.filter(r => r.STATUS_CLEAN === 'COMPLETE');
@@ -231,16 +230,25 @@ async function refreshAll() {
         lastUpdated.textContent = 'Last updated: ' + new Date().toLocaleString();
       }
     } else {
-      console.warn('⚠️ No data in response or response is empty');
-      showToast('⚠️ No data received from backend', 'info');
-    }
-
-    if (loadingIcon) {
-      loadingIcon.classList.remove('refresh-spin');
+      console.warn('⚠️ Invalid or missing opsData array in response:', response);
+      
+      // Clear local state to prevent displaying stale/corrupted data
+      globalData.opsData = [];
+      globalData.allDeliveries = [];
+      globalData.exportDeliveries = [];
+      globalData.localDeliveries = [];
+      globalData.completedDeliveries = [];
+      
+      showToast('⚠️ No valid operational data received from backend', 'warning');
     }
   } catch (err) {
     console.error('❌ Refresh error:', err);
     showToast('Failed to refresh data: ' + err.message, 'error');
+  } finally {
+    // Always stop the refresh animation
+    if (loadingIcon) {
+      loadingIcon.classList.remove('refresh-spin');
+    }
   }
 }
 
