@@ -203,8 +203,8 @@ async function refreshAll() {
     console.log('📊 Response received:', response);
 
     // Validate that response.opsData exists and is strictly an Array
-    if (response && Array.isArray(response.opsData)) {
-      globalData.opsData = response.opsData;
+    if (response && Array.isArray(response.rows)) {
+      globalData.opsData = response.rows;
       
       console.log('✅ Data loaded. Total rows:', globalData.opsData.length);
       
