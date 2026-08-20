@@ -562,8 +562,66 @@ async function submitUpdate() {
 /**
  * Open new order modal
  */
+/**
+ * Open new order modal
+ */
 function openNewOrderModal() {
-  showToast('New order creation - Backend integration required', 'info');
+  // Assuming your HTML has a modal with the ID 'newOrderModal'
+  const modalEl = document.getElementById('newOrderModal');
+  if (modalEl) {
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+  } else {
+    showToast('New order form is not available in the HTML yet.', 'error');
+  }
+}
+
+/**
+ * Submit the new order to the backend
+ */
+async function submitNewOrder() {
+  const pin = document.getElementById('staff-pin').value;
+  if (!pin) {
+    showToast('Staff PIN is required', 'error');
+    return;
+  }
+
+  // Adjust these element IDs to match the actual inputs in your HTML modal
+  const params = {
+    pin: pin,
+    ro: document.getElementById('new-ro').value,
+    vendor: document.getElementById('new-vendor').value,
+    dest: document.getElementById('new-dest').value,
+    market: document.getElementById('new-market').value, // e.g., 'Local' or 'International'
+    
+    // The backend expects an array of items converted to a JSON string
+    items: JSON.stringify([{
+      product: document.getElementById('new-product').value,
+      desc: document.getElementById('new-desc').value,
+      qty: document.getElementById('new-qty').value,
+      ctns: document.getElementById('new-ctns').value,
+      loc: document.getElementById('new-loc').value
+    }])
+  };
+
+  try {
+    const response = await callBackend('addNewOrder', params);
+    
+    if (response && response.status === 'success') {
+      showToast('✅ Order added successfully', 'success');
+      document.getElementById('staff-pin').value = ''; // Clear PIN for security
+      
+      // Refresh dashboard to show the new order
+      await refreshAll(); 
+      
+      // Hide the modal
+      bootstrap.Modal.getInstance(document.getElementById('newOrderModal')).hide();
+    } else {
+      showToast('❌ ' + (response.message || 'Failed to add order'), 'error');
+    }
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  }
 }
 
 /**
