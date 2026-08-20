@@ -79,6 +79,76 @@
     </div>
 </div>
 
+<!-- New Order Modal -->
+<div class="modal fade" id="newOrderModal" tabindex="-1" aria-labelledby="newOrderModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="newOrderModalLabel">➕ Create New Order</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <!-- Security PIN -->
+          <div class="col-md-12">
+            <label class="form-label fw-bold text-danger">Staff PIN *</label>
+            <input type="password" class="form-control border-danger" id="staff-pin" placeholder="Enter your authorized PIN">
+          </div>
+          
+          <!-- Order Details -->
+          <div class="col-md-6">
+            <label class="form-label">RO Number</label>
+            <input type="text" class="form-control" id="new-ro" placeholder="e.g. SL-H-04000">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Vendor</label>
+            <input type="text" class="form-control" id="new-vendor" placeholder="Vendor Name">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Destination</label>
+            <input type="text" class="form-control" id="new-dest" placeholder="Destination">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Market</label>
+            <select class="form-select" id="new-market">
+              <option value="Local">Local</option>
+              <option value="International">International</option>
+            </select>
+          </div>
+
+          <!-- Item Details -->
+          <hr class="mt-4">
+          <h6 class="fw-bold">Item Details</h6>
+          <div class="col-md-4">
+            <label class="form-label">Product</label>
+            <input type="text" class="form-control" id="new-product" placeholder="Product Code">
+          </div>
+          <div class="col-md-8">
+            <label class="form-label">Description</label>
+            <input type="text" class="form-control" id="new-desc" placeholder="Brief description">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Quantity</label>
+            <input type="number" class="form-control" id="new-qty" placeholder="0">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Cartons (CTNS)</label>
+            <input type="number" class="form-control" id="new-ctns" placeholder="0">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Location</label>
+            <input type="text" class="form-control" id="new-loc" placeholder="e.g. VN">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-top-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="submitNewOrder()">💾 Save Order</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Motion ribbon (dynamic ticker showing active deliveries, cusdec, vehicle, destination) -->
 <div class="container-fluid">
     <div class="motion-ribbon">
