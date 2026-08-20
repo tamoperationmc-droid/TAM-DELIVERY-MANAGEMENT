@@ -562,9 +562,6 @@ async function submitUpdate() {
 /**
  * Open new order modal
  */
-/**
- * Open new order modal
- */
 function openNewOrderModal() {
   // Assuming your HTML has a modal with the ID 'newOrderModal'
   const modalEl = document.getElementById('newOrderModal');
@@ -577,8 +574,36 @@ function openNewOrderModal() {
 }
 
 /**
- * Submit the new order to the backend
+ * Add a new item row to the New Order modal
  */
+function addOrderItemRow() {
+  const container = document.getElementById('items-container');
+  const row = document.createElement('div');
+  row.className = 'row g-2 item-row mb-3 pb-3 border-bottom position-relative';
+  
+  row.innerHTML = `
+    <div class="col-md-3">
+      <input type="text" class="form-control form-control-sm item-product" placeholder="Product Code">
+    </div>
+    <div class="col-md-4">
+      <input type="text" class="form-control form-control-sm item-desc" placeholder="Brief description">
+    </div>
+    <div class="col-md-2">
+      <input type="number" class="form-control form-control-sm item-qty" placeholder="0">
+    </div>
+    <div class="col-md-2">
+      <input type="number" class="form-control form-control-sm item-ctns" placeholder="0">
+    </div>
+    <div class="col-md-2 mt-2">
+      <input type="text" class="form-control form-control-sm item-loc" placeholder="VN">
+    </div>
+    <div class="col-md-1 mt-2 text-end">
+      <button type="button" class="btn btn-sm btn-danger text-white mt-4" onclick="this.closest('.item-row').remove()">🗑️</button>
+    </div>
+  `;
+  container.appendChild(row);
+}
+
 async function submitNewOrder() {
   const pin = document.getElementById('staff-pin').value;
   if (!pin) {
@@ -586,22 +611,36 @@ async function submitNewOrder() {
     return;
   }
 
-  // Adjust these element IDs to match the actual inputs in your HTML modal
+  // Gather all items from the dynamic rows
+  const itemRows = document.querySelectorAll('.item-row');
+  const itemsArray = [];
+  
+  itemRows.forEach(row => {
+    const product = row.querySelector('.item-product').value;
+    // Only add if the product code isn't blank
+    if (product.trim() !== '') {
+      itemsArray.push({
+        product: product,
+        desc: row.querySelector('.item-desc').value,
+        qty: row.querySelector('.item-qty').value || 0,
+        ctns: row.querySelector('.item-ctns').value || 0,
+        loc: row.querySelector('.item-loc').value
+      });
+    }
+  });
+
+  if (itemsArray.length === 0) {
+    showToast('Please add at least one product to the order.', 'warning');
+    return;
+  }
+
   const params = {
     pin: pin,
     ro: document.getElementById('new-ro').value,
     vendor: document.getElementById('new-vendor').value,
     dest: document.getElementById('new-dest').value,
-    market: document.getElementById('new-market').value, // e.g., 'Local' or 'International'
-    
-    // The backend expects an array of items converted to a JSON string
-    items: JSON.stringify([{
-      product: document.getElementById('new-product').value,
-      desc: document.getElementById('new-desc').value,
-      qty: document.getElementById('new-qty').value,
-      ctns: document.getElementById('new-ctns').value,
-      loc: document.getElementById('new-loc').value
-    }])
+    market: document.getElementById('new-market').value,
+    items: JSON.stringify(itemsArray) // Send the full array to the backend
   };
 
   try {
@@ -609,12 +648,17 @@ async function submitNewOrder() {
     
     if (response && response.status === 'success') {
       showToast('✅ Order added successfully', 'success');
-      document.getElementById('staff-pin').value = ''; // Clear PIN for security
+      document.getElementById('staff-pin').value = ''; 
       
-      // Refresh dashboard to show the new order
+      // Reset items container to just one blank row for the next order
+      const container = document.getElementById('items-container');
+      const firstRow = container.querySelector('.item-row').cloneNode(true);
+      // Clear values in cloned row
+      firstRow.querySelectorAll('input').forEach(input => input.value = '');
+      container.innerHTML = '';
+      container.appendChild(firstRow);
+      
       await refreshAll(); 
-      
-      // Hide the modal
       bootstrap.Modal.getInstance(document.getElementById('newOrderModal')).hide();
     } else {
       showToast('❌ ' + (response.message || 'Failed to add order'), 'error');
