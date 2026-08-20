@@ -408,12 +408,18 @@ function renderLocalDeliveries() {
 /**
  * Update export summary statistics
  */
+/**
+ * Update export summary statistics (Pending Only)
+ */
 function updateExportSummary(data) {
   const summary = document.getElementById('bdh-summary');
   if (!summary) return;
 
+  // Filter to include only pending/in-progress export deliveries
+  const pendingData = data.filter(r => r.STATUS_CLEAN !== 'COMPLETE');
+
   const typeCount = {};
-  data.forEach(r => {
+  pendingData.forEach(r => {
     typeCount[r.TYPE_VALUE] = (typeCount[r.TYPE_VALUE] || 0) + 1;
   });
 
@@ -421,7 +427,7 @@ function updateExportSummary(data) {
   Object.keys(typeCount).forEach(type => {
     html += `<li>✈️ <strong>${type}:</strong> ${typeCount[type]}</li>`;
   });
-  html += `<li class="mt-2"><strong>Total:</strong> ${data.length}</li>`;
+  html += `<li class="mt-2"><strong>Total Pending:</strong> ${pendingData.length}</li>`;
   html += '</ul>';
 
   summary.innerHTML = html;
