@@ -135,6 +135,19 @@ function getStatusBadge(status) {
   return `<span class="status-badge">${statusUpper}</span>`;
 }
 
+function getInvoiceBadgeClass(status) {
+  const s = (status || '').toUpperCase();
+  if (s === 'PROCESSED' || s === 'RECEIVED') return 'bg-success';
+  return 'bg-warning text-dark';
+}
+
+function getCusdecBadgeClass(status) {
+  const s = (status || '').toUpperCase();
+  if (s === 'APPROVED') return 'bg-success';
+  if (s === 'REJECTED') return 'bg-danger';
+  return 'bg-warning text-dark';
+}
+
 /**
  * Show toast notification
  */
@@ -317,10 +330,17 @@ function renderPendingDeliveries() {
             <span class="cutoff-text">${row.CUTOFF_VALUE}</span>
           </div>
           <div class="col-md-3">
-            <small class="text-muted">Vehicle:</small>
-            <br>
-            <strong>${row.VEHICLE || '🚗 TBA'}</strong>
-            ${row.IS_GATE_OUT ? '<span class="badge bg-success ms-2">Gate Out ✓</span>' : ''}
+            <div class="d-flex align-items-center flex-wrap gap-1">
+              <div>
+                <small class="text-muted">Vehicle:</small><br>
+                <strong>${row.VEHICLE || '🚗 TBA'}</strong>
+                ${row.IS_GATE_OUT ? '<span class="badge bg-success ms-1" style="font-size:0.6rem;">Gate Out ✓</span>' : ''}
+              </div>
+            </div>
+            <div class="mt-1 d-flex gap-1 flex-wrap">
+              <span class="badge ${getInvoiceBadgeClass(row.INVOICE_STATUS)}" style="font-size: 0.65rem;">Inv: ${row.INVOICE_STATUS || 'PENDING'}</span>
+              <span class="badge ${getCusdecBadgeClass(row.CUSDEC_STATUS)}" style="font-size: 0.65rem;">Cusdec: ${row.CUSDEC_STATUS || 'PENDING'}</span>
+            </div>
           </div>
         </div>
       </div>
