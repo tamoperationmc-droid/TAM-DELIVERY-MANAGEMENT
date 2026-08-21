@@ -527,7 +527,7 @@ function openItemModal(roNumber) {
  * Submit order update
  */
 async function submitUpdate() {
-  const pin = document.getElementById('staff-pin').value;
+  const pin = document.getElementById('edit-staff-pin').value;
   
   if (!pin) {
     showToast('Staff PIN is required', 'error');
