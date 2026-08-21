@@ -968,8 +968,84 @@ async function onDriveSearch() {
 /**
  * Open vehicle details modal
  */
-function openVehicleModal() {
-  showToast('Vehicle details modal - Implementation required', 'info');
+/**
+ * Open vehicle details modal and load existing details if available
+ */
+async function openVehicleModal() {
+  if (!globalData.currentSelectedRO) {
+    showToast('No order selected', 'error');
+    return;
+  }
+
+  try {
+    // Call backend to check if vehicle details already exist for this RO
+    const response = await callBackend('getVehicleDetails', { ro: globalData.currentSelectedRO });
+    
+    if (response && response.status === 'success' && response.data) {
+      const v = response.data;
+      document.getElementById('veh-number').value = v.vehicleNo || '';
+      document.getElementById('veh-type').value = v.vehicleType || 'Lorry';
+      document.getElementById('veh-forwarder').value = v.forwarder || '';
+      document.getElementById('veh-driver').value = v.driverName || '';
+      document.getElementById('veh-contact').value = v.contactNo || '';
+      document.getElementById('veh-container').value = v.containerNo || '';
+      document.getElementById('veh-seal').value = v.sealNo || '';
+      document.getElementById('veh-cbm').value = v.cbm || '';
+      document.getElementById('veh-ctns').value = v.totalCtns || '';
+    } else {
+      // Clear form if no existing record
+      document.getElementById('vehicleForm').reset();
+    }
+
+    // Show the modal
+    const modalEl = document.getElementById('vehicleModal');
+    if (modalEl) {
+      const modal = new bootstrap.Modal(modalEl);
+      modal.show();
+    }
+  } catch (err) {
+    showToast('Error loading vehicle details', 'error');
+  }
+}
+
+/**
+ * Save vehicle details to backend Transport sheet
+ */
+async function saveVehicleInfo() {
+  const pin = document.getElementById('veh-pin').value;
+  if (!pin) {
+    showToast('Staff PIN is required', 'error');
+    return;
+  }
+
+  const params = {
+    pin: pin,
+    ro: globalData.currentSelectedRO,
+    vehicleNo: document.getElementById('veh-number').value,
+    vehicleType: document.getElementById('veh-type').value,
+    forwarder: document.getElementById('veh-forwarder').value,
+    driverName: document.getElementById('veh-driver').value,
+    contactNo: document.getElementById('veh-contact').value,
+    containerNo: document.getElementById('veh-container').value,
+    sealNo: document.getElementById('veh-seal').value,
+    cbm: document.getElementById('veh-cbm').value,
+    totalCtns: document.getElementById('veh-ctns').value
+  };
+
+  try {
+    const response = await callBackend('saveVehicleDetails', params);
+    
+    if (response && response.status === 'success') {
+      showToast('✅ Vehicle details saved successfully', 'success');
+      document.getElementById('veh-pin').value = '';
+      bootstrap.Modal.getInstance(document.getElementById('vehicleModal')).hide();
+      await refreshAll();
+    } else {
+      showToast('❌ ' + (response.message || 'Failed to save vehicle details'), 'error');
+    }
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  }
 }
 
 // ==================== INITIALIZE ON LOAD ====================
