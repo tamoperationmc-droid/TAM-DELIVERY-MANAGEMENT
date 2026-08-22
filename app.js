@@ -332,8 +332,12 @@ function renderPendingDeliveries() {
           <div class="col-md-3">
             <div class="d-flex align-items-center flex-wrap gap-1">
               <div>
-                <small class="text-muted">Vehicle:</small><br>
-                <strong>${row.VEHICLE || '🚗 TBA'}</strong>
+                <small class="text-muted">Vehicle Details:</small><br>
+                <strong>
+                  ${row.VEHICLE ? 
+                    `${row.VEHICLE} ${row.CONTAINER_NO ? '| ' + row.CONTAINER_NO : ''} ${row.SEAL_NO ? '| ' + row.SEAL_NO : ''} ${row.CONTACT_NO ? '| ' + row.CONTACT_NO : ''}` 
+                    : '🚗 TBA'}
+                </strong>
                 ${row.IS_GATE_OUT ? '<span class="badge bg-success ms-1" style="font-size:0.6rem;">Gate Out ✓</span>' : ''}
               </div>
             </div>
