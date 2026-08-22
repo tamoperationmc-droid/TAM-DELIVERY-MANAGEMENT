@@ -888,10 +888,7 @@ function renderDriveFiles(files) {
 }
 
 /**
- * Upload file to drive
- */
-/**
- * Upload file to drive using chunking to avoid URL length limits
+ * Upload file to drive using safe micro-chunks to prevent URL length limit errors
  */
 async function uploadDriveFile() {
   const fileInput = document.getElementById('drive-upload-file');
@@ -904,16 +901,17 @@ async function uploadDriveFile() {
 
   const file = fileInput.files[0];
   const folderName = folderSelect.value;
-  const uploadId = 'up_' + Math.random().toString(36.2, 9);
+  const uploadId = 'up_' + Math.random().toString(36).substring(2, 9);
 
   showToast('📤 Preparing file upload...', 'info');
 
-  // Read file as base64
   const reader = new FileReader();
   reader.onload = async (e) => {
     try {
       const base64FullData = e.target.result.split(',')[1];
-      const chunkSize = 50 * 1024; // 50KB chunks
+      
+      // Keep chunk size small (1.5KB raw bytes -> ~2KB Base64) to safely fit inside GET URL limits
+      const chunkSize = 1500; 
       const totalChunks = Math.ceil(base64FullData.length / chunkSize);
 
       showToast(`📤 Uploading 0/${totalChunks} chunks...`, 'info');
@@ -931,7 +929,10 @@ async function uploadDriveFile() {
           throw new Error(`Failed at chunk ${i + 1} of ${totalChunks}`);
         }
 
-        showToast(`📤 Uploading ${i + 1}/${totalChunks} chunks...`, 'info');
+        // Update progress every 5 chunks or on the last chunk to avoid UI lag
+        if (i % 5 === 0 || i === totalChunks - 1) {
+          showToast(`📤 Uploading ${i + 1}/${totalChunks} chunks...`, 'info');
+        }
       }
 
       showToast('⚙️ Finalizing upload on Google Drive...', 'info');
@@ -1027,9 +1028,7 @@ async function onDriveSearch() {
   }
 }
 
-/**
- * Open vehicle details modal
- */
+
 /**
  * Open vehicle details modal and load existing details if available
  */
