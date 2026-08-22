@@ -389,6 +389,26 @@
                                 <div class="col-md-12 text-end mt-2"><button id="update-btn" onclick="submitUpdate()" class="btn btn-primary btn-sm fw-bold px-4 w-100" style="background:#1a3a52; border: none;">✅ Update</button></div>
                             </div>
                         </div>
+                                <!-- NEW: Order Products Table Section -->
+                        <div class="mt-3 border-top pt-3">
+                            <h6 class="fw-bold text-secondary mb-2">📦 Products List</h6>
+                            <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
+                                <table class="table table-sm table-bordered mb-0" style="font-size: 0.8rem;">
+                                    <thead class="table-light sticky-top">
+                                        <tr>
+                                            <th>Product Code</th>
+                                            <th>Description</th>
+                                            <th>Qty</th>
+                                            <th>Ctns</th>
+                                            <th>Location</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="modal-products-tbody">
+                                        <tr><td colspan="5" class="text-center text-muted">No products loaded</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
