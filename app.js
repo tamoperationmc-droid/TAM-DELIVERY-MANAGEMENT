@@ -890,6 +890,9 @@ function renderDriveFiles(files) {
 /**
  * Upload file to drive
  */
+/**
+ * Upload file to drive using chunking to avoid URL length limits
+ */
 async function uploadDriveFile() {
   const fileInput = document.getElementById('drive-upload-file');
   const folderSelect = document.getElementById('drive-upload-folder');
@@ -901,30 +904,64 @@ async function uploadDriveFile() {
 
   const file = fileInput.files[0];
   const folderName = folderSelect.value;
+  const uploadId = 'up_' + Math.random().toString(36.2, 9);
+
+  showToast('📤 Preparing file upload...', 'info');
 
   // Read file as base64
   const reader = new FileReader();
   reader.onload = async (e) => {
     try {
-      const base64 = e.target.result.split(',')[1];
-      const response = await callBackend('uploadFile', {
+      const base64FullData = e.target.result.split(',')[1];
+      const chunkSize = 50 * 1024; // 50KB chunks
+      const totalChunks = Math.ceil(base64FullData.length / chunkSize);
+
+      showToast(`📤 Uploading 0/${totalChunks} chunks...`, 'info');
+
+      for (let i = 0; i < totalChunks; i++) {
+        const chunk = base64FullData.slice(i * chunkSize, (i + 1) * chunkSize);
+        
+        const chunkResponse = await callBackend('uploadChunk', {
+          uploadId: uploadId,
+          index: i,
+          chunk: chunk
+        });
+
+        if (!chunkResponse || chunkResponse.status !== 'success') {
+          throw new Error(`Failed at chunk ${i + 1} of ${totalChunks}`);
+        }
+
+        showToast(`📤 Uploading ${i + 1}/${totalChunks} chunks...`, 'info');
+      }
+
+      showToast('⚙️ Finalizing upload on Google Drive...', 'info');
+
+      const finishResponse = await callBackend('finishChunkUpload', {
+        uploadId: uploadId,
+        totalChunks: totalChunks,
         folderName: folderName,
         fileName: file.name,
-        mimeType: file.type,
-        base64Data: base64
+        mimeType: file.type
       });
 
-      if (response.status === 'success') {
-        showToast('✅ File uploaded successfully', 'success');
+      if (finishResponse && finishResponse.status === 'success') {
+        showToast('✅ File uploaded successfully!', 'success');
         fileInput.value = '';
         loadDriveTabFiles(folderName);
       } else {
-        showToast('❌ ' + (response.message || 'Upload failed'), 'error');
+        showToast('❌ ' + (finishResponse?.message || 'Finalize upload failed'), 'error');
       }
+
     } catch (err) {
       showToast('Upload error: ' + err.message, 'error');
+      console.error('❌ Upload chunk error:', err);
     }
   };
+
+  reader.onerror = () => {
+    showToast('Failed to read selected file', 'error');
+  };
+
   reader.readAsDataURL(file);
 }
 
