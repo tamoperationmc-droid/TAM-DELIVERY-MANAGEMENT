@@ -430,7 +430,6 @@ function renderLocalDeliveries() {
 }
 
 /**
- * Update export summary statistics
  */
 /**
  * Update export summary statistics (Pending Only)
@@ -541,6 +540,28 @@ function openItemModal(roNumber) {
   document.getElementById('edit-note').value = row.NOTE_VALUE || '';
   document.getElementById('edit-cutoff').value = row.CUTOFF_VALUE || '';
   document.getElementById('edit-loading-status').value = row.STATUS_CLEAN || 'PENDING';
+
+  // Populate Products Table
+  const productsTbody = document.getElementById('modal-products-tbody');
+  if (productsTbody) {
+    if (row.ITEMS && row.ITEMS.length > 0) {
+      let prodHtml = '';
+      row.ITEMS.forEach(item => {
+        prodHtml += `
+          <tr>
+            <td><strong>${item.productCode || ''}</strong></td>
+            <td>${item.description || ''}</td>
+            <td>${item.qty || 0}</td>
+            <td>${item.ctns || 0}</td>
+            <td>${item.location || ''}</td>
+          </tr>
+        `;
+      });
+      productsTbody.innerHTML = prodHtml;
+    } else {
+      productsTbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No products found for this order</td></tr>';
+    }
+  }
 
   // Show modal
   const modal = new bootstrap.Modal(document.getElementById('itemModal'));
