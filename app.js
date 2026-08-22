@@ -6,7 +6,7 @@
 // ==================== CONFIGURATION ====================
 const API_CONFIG = {
   // Google Apps Script deployment URL - Using /exec endpoint (not /usercache)
-  BACKEND_URL: 'https://script.google.com/macros/s/AKfycbwV8VooyoFecTKdGDB3-EPrbVjJhVFDtVT_u50qbdTphjt3ALdYNhpSB1k0Qa_8BjGl/exec'
+  BACKEND_URL: 'https://script.google.com/macros/s/AKfycbw20ZJYAXHYO2W-bu4GZvMCDp5-fT9RVMMfsvvP5EE1Oo3ChWIBHsL_mv0LTdKZW3S2/exec'
 };
 
 // Display backend URL on page
