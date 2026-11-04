@@ -285,6 +285,7 @@ async function testDriveBackend() {
   }
 }
 
+
 // ==================== DELIVERY RENDERING ====================
 
 /**
@@ -314,6 +315,227 @@ function passesSearchFilter(row, query) {
     (row.COL_8 && String(row.COL_8).toLowerCase().includes(q)) ||
     (row.CONTAINER_NO && String(row.CONTAINER_NO).toLowerCase().includes(q))
   );
+}
+/**
+ * Modern Executive Completed Shipments Portal
+ */
+async function openCompleteShipmentsModal() {
+  try {
+    showToast('Loading completed shipments...', 'info');
+    const response = await callBackend('getCompleted', {});
+    
+    if (response && Array.isArray(response)) {
+      globalData.completedDeliveries = response;
+      
+      // Clean up existing modal element if present
+      const existingModal = document.getElementById('completeReportModal');
+      if (existingModal) existingModal.remove();
+
+      let html = `
+        <div class="modal fade" id="completeReportModal" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; background: #f8f9fa;">
+              
+              <!-- Header -->
+              <div class="modal-header border-0 bg-dark text-white p-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px; background: linear-gradient(135deg, #111827 0%, #1f2937 100%) !important;">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="p-2 bg-success bg-opacity-20 rounded-3 text-success">
+                    <h4 class="mb-0">✅</h4>
+                  </div>
+                  <div>
+                    <h5 class="modal-title fw-bold text-white mb-0">Completed Shipments Hub</h5>
+                    <small class="text-muted">Archived operational records & loading analytics</small>
+                  </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+              </div>
+
+              <!-- Controls & Metrics Ribbon -->
+              <div class="modal-body p-4">
+                <div class="row g-3 mb-4 align-items-center">
+                  <div class="col-md-5">
+                    <div class="input-group input-group-sm shadow-sm rounded-pill overflow-hidden bg-white border">
+                      <span class="input-group-text bg-white border-0 ps-3">🔍</span>
+                      <input type="text" id="completed-search-input" class="form-control border-0 shadow-none ps-1" placeholder="Search RO, Vendor, Vehicle, Driver, Cusdec..." onkeyup="filterCompletedCards()">
+                    </div>
+                  </div>
+                  <div class="col-md-7 d-flex justify-content-md-end align-items-center gap-2">
+                    <span id="completed-count-badge" class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill fw-bold">
+                      ${globalData.completedDeliveries.length} Shipments Archived
+                    </span>
+                    <button class="btn btn-sm btn-danger rounded-pill px-3 fw-bold shadow-sm" onclick="generateCompletedPDFReport()">📄 PDF Report</button>
+                    <button class="btn btn-sm btn-success rounded-pill px-3 fw-bold shadow-sm" onclick="exportCompletedToExcel()">📊 Export Excel</button>
+                  </div>
+                </div>
+
+                <!-- Cards Grid Container -->
+                <div id="completed-cards-container" class="row g-3">
+                  ${renderCompletedCardsHTML(globalData.completedDeliveries)}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', html);
+      const modal = new bootstrap.Modal(document.getElementById('completeReportModal'));
+      modal.show();
+    } else {
+      showToast('No completed shipments found', 'warning');
+    }
+  } catch (err) {
+    showToast('Failed to load completed shipments: ' + err.message, 'error');
+  }
+}
+
+/**
+ * Render Executive Card Layout for Completed Orders
+ */
+function renderCompletedCardsHTML(data) {
+  if (!data || data.length === 0) {
+    return `
+      <div class="col-12 text-center py-5">
+        <div class="p-4 bg-white rounded-4 border shadow-sm d-inline-block">
+          <p class="text-muted mb-0 fw-bold">📦 No matching completed shipment records found.</p>
+        </div>
+      </div>`;
+  }
+
+  return data.map((row, idx) => {
+    const startTime = row.START_TIME_DISPLAY || formatDateTime(row.START_TIME_RAW) || 'N/A';
+    const endTime = row.COMPLETE_TIME_DISPLAY || formatDateTime(row.COMPLETE_TIME_RAW) || 'N/A';
+    const accordionId = `collapseItems_${idx}`;
+
+    // Product Table Rows
+    let itemsTable = '<div class="text-muted small fst-italic p-2">No product line items attached.</div>';
+    if (row.ITEMS && Array.isArray(row.ITEMS) && row.ITEMS.length > 0) {
+      itemsTable = `
+        <div class="table-responsive rounded-3 border mt-2">
+          <table class="table table-sm table-striped mb-0 bg-white" style="font-size: 0.75rem;">
+            <thead class="table-dark">
+              <tr>
+                <th>Code</th>
+                <th>Description</th>
+                <th>Qty</th>
+                <th>Ctns</th>
+                <th>Location</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${row.ITEMS.map(item => `
+                <tr>
+                  <td class="fw-bold text-primary">${item.productCode || '-'}</td>
+                  <td>${item.description || '-'}</td>
+                  <td><span class="badge bg-secondary">${item.qty || 0}</span></td>
+                  <td>${item.ctns || 0}</td>
+                  <td><span class="badge bg-light text-dark border">${item.location || '-'}</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="col-12 col-lg-6 completed-card-item">
+        <div class="card border-0 shadow-sm h-100 rounded-4 overflow-hidden bg-white border-start border-4 border-success">
+          <div class="card-body p-3">
+            
+            <!-- Top Header Row -->
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 fw-bold mb-1">
+                  RO: ${row.RO_VALUE || '-'}
+                </span>
+                <h6 class="fw-bold text-dark mb-0">🏬 ${row.VENDOR_VALUE || 'Unknown Vendor'}</h6>
+              </div>
+              <div class="text-end">
+                <span class="badge bg-dark text-white rounded-pill px-2 py-1 small">${row.TYPE_VALUE || 'LOCAL'}</span>
+                <div class="small text-muted mt-1 fw-bold">📍 ${row.DEST_VALUE || '-'}</div>
+              </div>
+            </div>
+
+            <hr class="my-2 text-muted opacity-25">
+
+            <!-- Middle Operational Specs Grid -->
+            <div class="row g-2 mb-2" style="font-size: 0.78rem;">
+              <div class="col-6">
+                <div class="p-2 rounded-3 bg-light border">
+                  <div class="text-muted small">🚚 Vehicle & Container</div>
+                  <strong class="text-dark d-block text-truncate">
+                    ${row.VEHICLE || 'TBA'} ${row.CONTAINER_NO ? '| ' + row.CONTAINER_NO : ''}
+                  </strong>
+                  <span class="text-secondary small">Seal: ${row.SEAL_NO || 'N/A'}</span>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="p-2 rounded-3 bg-light border">
+                  <div class="text-muted small">👤 Driver & Customs</div>
+                  <strong class="text-dark d-block text-truncate">
+                    ${row.DRIVER_NAME || row.CONTACT_NO || 'No Driver Info'}
+                  </strong>
+                  <span class="text-success fw-bold small">Cusdec: ${row.COL_8 || 'N/A'}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Loading Timing Ribbon -->
+            <div class="d-flex justify-content-between align-items-center p-2 rounded-3 bg-success bg-opacity-10 mb-2" style="font-size: 0.75rem;">
+              <div>⏱️ <strong>Start:</strong> ${startTime}</div>
+              <div>🏁 <strong>End:</strong> ${endTime}</div>
+              <div><span class="badge bg-success">${row.DURATION || 'Complete'}</span></div>
+            </div>
+
+            <!-- Product Accordion Toggle -->
+            <button class="btn btn-sm btn-light w-100 text-start d-flex justify-content-between align-items-center border rounded-3 fw-bold py-1 px-2 mt-1" 
+                    type="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#${accordionId}" 
+                    aria-expanded="false" 
+                    style="font-size: 0.75rem;">
+              <span>📦 View Products List (${row.ITEMS ? row.ITEMS.length : 0} items)</span>
+              <small class="text-muted">▼</small>
+            </button>
+
+            <!-- Collapsible Products Table -->
+            <div class="collapse" id="${accordionId}">
+              ${itemsTable}
+            </div>
+
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/**
+ * Filter Cards Dynamically by any specification field
+ */
+function filterCompletedCards() {
+  const query = (document.getElementById('completed-search-input')?.value || '').toLowerCase().trim();
+  const container = document.getElementById('completed-cards-container');
+  const countBadge = document.getElementById('completed-count-badge');
+  if (!container) return;
+
+  const filtered = globalData.completedDeliveries.filter(row => {
+    if (!query) return true;
+    return (
+      (row.RO_VALUE && String(row.RO_VALUE).toLowerCase().includes(query)) ||
+      (row.VENDOR_VALUE && String(row.VENDOR_VALUE).toLowerCase().includes(query)) ||
+      (row.DEST_VALUE && String(row.DEST_VALUE).toLowerCase().includes(query)) ||
+      (row.VEHICLE && String(row.VEHICLE).toLowerCase().includes(query)) ||
+      (row.DRIVER_NAME && String(row.DRIVER_NAME).toLowerCase().includes(query)) ||
+      (row.COL_8 && String(row.COL_8).toLowerCase().includes(query)) ||
+      (row.CONTAINER_NO && String(row.CONTAINER_NO).toLowerCase().includes(query))
+    );
+  });
+
+  container.innerHTML = renderCompletedCardsHTML(filtered);
+  if (countBadge) countBadge.textContent = `${filtered.length} Shipments Archived`;
 }
 
 /**
