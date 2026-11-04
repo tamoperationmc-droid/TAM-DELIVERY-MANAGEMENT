@@ -356,6 +356,98 @@ function renderPendingDeliveries() {
 }
 
 /**
+ * Filter deliveries based on search input
+ */
+function handleSearch() {
+  const query = document.getElementById('search-input').value.toLowerCase().trim();
+
+  if (!query) {
+    // If search is empty, render full datasets
+    renderPendingDeliveries();
+    renderExportDeliveries();
+    renderLocalDeliveries();
+    return;
+  }
+
+  // Filter deliveries matching RO, Destination, Vendor, Vehicle, or Cusdec No
+  const filteredAll = globalData.allDeliveries.filter(r => matchSearchQuery(r, query));
+  const filteredExport = globalData.exportDeliveries.filter(r => matchSearchQuery(r, query));
+  const filteredLocal = globalData.localDeliveries.filter(r => matchSearchQuery(r, query));
+
+  renderFilteredDeliveries('pending-container', filteredAll, 'pending-badge');
+  renderFilteredDeliveries('bdh-container', filteredExport, 'bdh-badge');
+  renderFilteredDeliveries('slh-container', filteredLocal, 'slh-badge');
+}
+
+/**
+ * Helper to match query against order fields
+ */
+function matchSearchQuery(row, query) {
+  return (
+    (row.RO_VALUE && row.RO_VALUE.toLowerCase().includes(query)) ||
+    (row.DEST_VALUE && row.DEST_VALUE.toLowerCase().includes(query)) ||
+    (row.VENDOR_VALUE && row.VENDOR_VALUE.toLowerCase().includes(query)) ||
+    (row.VEHICLE && row.VEHICLE.toLowerCase().includes(query)) ||
+    (row.COL_8 && row.COL_8.toLowerCase().includes(query)) ||
+    (row.CONTAINER_NO && row.CONTAINER_NO.toLowerCase().includes(query))
+  );
+}
+
+/**
+ * Render filtered deliveries into a specific container
+ */
+function renderFilteredDeliveries(containerId, data, badgeId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const activeData = data.filter(r => r.STATUS_CLEAN !== 'COMPLETE');
+
+  if (activeData.length === 0) {
+    container.innerHTML = '<div class="text-center text-muted mt-5"><p>No matching deliveries found</p></div>';
+    if (badgeId) document.getElementById(badgeId).textContent = '0';
+    return;
+  }
+
+  let html = '';
+  activeData.forEach(row => {
+    const isProgress = row.STATUS_CLEAN === 'IN-PROGRESS';
+    const rowClass = isProgress ? 'progress-row' : 'pending-row';
+
+    html += `
+      <div class="${rowClass} p-3 mb-2" onclick="openItemModal('${row.RO_VALUE}')">
+        <div class="row align-items-center g-2">
+          <div class="col-md-2">
+            <strong class="text-dark">${row.RO_VALUE}</strong><br>
+            ${getStatusBadge(row.STATUS_CLEAN)}
+          </div>
+          <div class="col-md-2">
+            <div class="facility-tag">${row.FACILITY_VALUE}</div>
+            <small class="text-muted">${row.TYPE_VALUE}</small>
+          </div>
+          <div class="col-md-3">
+            <strong>📍 ${row.DEST_VALUE}</strong><br>
+            <small class="text-muted">Vendor: ${row.VENDOR_VALUE}</small>
+          </div>
+          <div class="col-md-2">
+            <small class="text-muted">Cutoff:</small><br>
+            <span class="cutoff-text">${row.CUTOFF_VALUE}</span>
+          </div>
+          <div class="col-md-3">
+            <small class="text-muted">Vehicle Details:</small><br>
+            <strong>
+              ${row.VEHICLE ? `${row.VEHICLE} ${row.CONTAINER_NO ? '| ' + row.CONTAINER_NO : ''}` : '🚗 TBA'}
+            </strong>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+  if (badgeId) document.getElementById(badgeId).textContent = activeData.length;
+}
+
+/**
  * Render export deliveries with filtering
  */
 function renderExportDeliveries() {
@@ -1114,16 +1206,17 @@ async function saveVehicleInfo() {
 document.addEventListener('DOMContentLoaded', () => {
   console.log('📄 DOM Content Loaded - Starting app initialization');
   
-  // Restore dark mode preference
   if (localStorage.getItem('darkMode') === 'true') {
     document.body.classList.add('dark-mode');
   }
 
-  // Initialize app
-  initApp();
+  // Attach keyup listener to real-time search input
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) {
+    searchInput.addEventListener('keyup', handleSearch);
+  }
 
-  // Load initial drive files
+  initApp();
   loadDriveTabFiles('Export Docs');
 });
-
 console.log('✅ app.js loaded successfully');
