@@ -290,14 +290,46 @@ async function testDriveBackend() {
 /**
  * Render all pending/active deliveries
  */
+/**
+ * Global search handler triggered on keyup/input
+ */
+function handleSearch() {
+  renderPendingDeliveries();
+  renderExportDeliveries();
+  renderLocalDeliveries();
+}
+
+/**
+ * Match row against the current search query
+ */
+function passesSearchFilter(row, query) {
+  if (!query) return true;
+  const q = query.toLowerCase().trim();
+  
+  return (
+    (row.RO_VALUE && String(row.RO_VALUE).toLowerCase().includes(q)) ||
+    (row.DEST_VALUE && String(row.DEST_VALUE).toLowerCase().includes(q)) ||
+    (row.VENDOR_VALUE && String(row.VENDOR_VALUE).toLowerCase().includes(q)) ||
+    (row.VEHICLE && String(row.VEHICLE).toLowerCase().includes(q)) ||
+    (row.COL_8 && String(row.COL_8).toLowerCase().includes(q)) ||
+    (row.CONTAINER_NO && String(row.CONTAINER_NO).toLowerCase().includes(q))
+  );
+}
+
+/**
+ * Render all pending/active deliveries (with search filtering)
+ */
 function renderPendingDeliveries() {
   const container = document.getElementById('pending-container');
   if (!container) return;
 
-  const data = globalData.allDeliveries.filter(r => r.STATUS_CLEAN !== 'COMPLETE');
-  
+  const searchQuery = (document.getElementById('search-input')?.value || '').trim();
+
+  let data = globalData.allDeliveries.filter(r => r.STATUS_CLEAN !== 'COMPLETE');
+  data = data.filter(r => passesSearchFilter(r, searchQuery));
+
   if (data.length === 0) {
-    container.innerHTML = '<div class="text-center text-muted mt-5"><p>No active deliveries</p></div>';
+    container.innerHTML = '<div class="text-center text-muted mt-5"><p>No matching active deliveries found</p></div>';
     document.getElementById('pending-badge').textContent = '0';
     return;
   }
@@ -306,9 +338,9 @@ function renderPendingDeliveries() {
   data.forEach(row => {
     const isProgress = row.STATUS_CLEAN === 'IN-PROGRESS';
     const rowClass = isProgress ? 'progress-row' : 'pending-row';
-    
+
     html += `
-      <div class="${rowClass} p-3" onclick="openItemModal('${row.RO_VALUE}')">
+      <div class="${rowClass} p-3 mb-2" onclick="openItemModal('${row.RO_VALUE}')">
         <div class="row align-items-center g-2">
           <div class="col-md-2">
             <strong class="text-dark">${row.RO_VALUE}</strong>
@@ -353,6 +385,87 @@ function renderPendingDeliveries() {
 
   container.innerHTML = html;
   document.getElementById('pending-badge').textContent = data.length;
+}
+
+/**
+ * Render export deliveries (with search filtering)
+ */
+function renderExportDeliveries() {
+  const container = document.getElementById('bdh-container');
+  if (!container) return;
+
+  const searchQuery = (document.getElementById('search-input')?.value || '').trim();
+
+  let data = globalData.exportDeliveries.filter(r => r.STATUS_CLEAN !== 'COMPLETE');
+  
+  if (globalData.exportTypeFilter !== 'ALL') {
+    data = data.filter(r => r.TYPE_VALUE === globalData.exportTypeFilter);
+  }
+
+  data = data.filter(r => passesSearchFilter(r, searchQuery));
+
+  if (data.length === 0) {
+    container.innerHTML = '<div class="text-center text-muted mt-5"><p>No matching export deliveries found</p></div>';
+    document.getElementById('bdh-badge').textContent = '0';
+    return;
+  }
+
+  let html = '';
+  data.forEach(row => {
+    html += `
+      <div class="pending-row p-3 cursor-pointer mb-2" onclick="openItemModal('${row.RO_VALUE}')">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h6 class="mb-1"><strong>${row.RO_VALUE}</strong> - ${row.DEST_VALUE}</h6>
+            <small class="text-muted">Vendor: ${row.VENDOR_VALUE} | Type: ${row.TYPE_VALUE}</small>
+          </div>
+          ${getStatusBadge(row.STATUS_CLEAN)}
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+  document.getElementById('bdh-badge').textContent = data.length;
+  updateExportSummary(globalData.exportDeliveries);
+}
+
+/**
+ * Render local deliveries (with search filtering)
+ */
+function renderLocalDeliveries() {
+  const container = document.getElementById('slh-container');
+  if (!container) return;
+
+  const searchQuery = (document.getElementById('search-input')?.value || '').trim();
+
+  let data = globalData.localDeliveries.filter(r => r.STATUS_CLEAN !== 'COMPLETE');
+  data = data.filter(r => passesSearchFilter(r, searchQuery));
+
+  if (data.length === 0) {
+    container.innerHTML = '<div class="text-center text-muted mt-5"><p>No matching local deliveries found</p></div>';
+    document.getElementById('slh-badge').textContent = '0';
+    return;
+  }
+
+  let html = '';
+  data.forEach(row => {
+    html += `
+      <div class="pending-row p-3 cursor-pointer mb-2" onclick="openItemModal('${row.RO_VALUE}')">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h6 class="mb-1"><strong>${row.RO_VALUE}</strong> - ${row.DEST_VALUE}</h6>
+            <small class="text-muted">Vendor: ${row.VENDOR_VALUE}</small>
+          </div>
+          ${getStatusBadge(row.STATUS_CLEAN)}
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+  document.getElementById('slh-badge').textContent = data.length;
+  updateLocalSummary(globalData.localDeliveries);
 }
 
 /**
