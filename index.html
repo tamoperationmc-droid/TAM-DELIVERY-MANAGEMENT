@@ -3,6 +3,8 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>TAM DELIVERY MANAGEMENT SYSTEM</title>
+    <!-- Prevent 404 favicon logs -->
+    <link rel="icon" href="data:,">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -30,26 +32,11 @@
         .bg-pending { background-color: #fce8e6; color: #d93025; border-color: #f1998e; }
         .bg-progress { background-color: #e6f4ea; color: #1e8e3e; border-color: #81c995; }
         
-        #activity-feed { height: 430px; overflow-y: auto; background: #1a1a1a; border-radius: 8px; padding: 10px; border: 1px solid #333; }
-        .feed-item { background: #262626; color: #39ff14; font-family: 'Consolas', monospace; padding: 12px; margin-bottom: 10px; border-left: 4px solid #39ff14; font-size: 0.75rem; }
         .data-label { color: #70757a; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; margin-bottom: 2px; display: block;}
-
-        #completeReportModal table th { font-size: 0.82rem; }
-        #completeReportModal table th:nth-child(1) { width: 20%; }
-        #completeReportModal table th:nth-child(2),
-        #completeReportModal table th:nth-child(3) { width: 12%; }
-        #completeReportModal table th:nth-child(4) { width: 38%; }
-        #completeReportModal table th:nth-child(5) { width: 15%; }
-
-        .timer-badge { background: #dc3545; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.65rem; font-weight: bold; animation: pulse-red 2s infinite; }
-        @keyframes pulse-red { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
 
         #refresh-icon { display: inline-block; }
         #refresh-icon.refresh-spin { animation: refresh-spin 0.6s ease-in-out; }
         @keyframes refresh-spin { 0% { transform: rotate(0deg); } 50% { transform: rotate(180deg); } 100% { transform: rotate(360deg); } }
-
-        .glow { box-shadow: 0 0 20px rgba(255, 193, 7, 0.8), 0 0 40px rgba(255, 193, 7, 0.4); animation: glow-pulse 2s infinite; }
-        @keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 20px rgba(255, 193, 7, 0.8), 0 0 40px rgba(255, 193, 7, 0.4); } 50% { box-shadow: 0 0 30px rgba(255, 193, 7, 1), 0 0 60px rgba(255, 193, 7, 0.6); } }
 
         .export-filter-btn { min-width: 88px; border-radius: 20px; font-weight: 600; font-size: 0.75rem; }
 
@@ -69,7 +56,7 @@
     <div class="container-fluid d-flex justify-content-between align-items-center">
         <h4 class="mb-0 text-white fw-bold">🚛 TAM DELIVERY MANAGEMENT</h4>
         <div class="d-flex align-items-center flex-wrap justify-content-end gap-1">
-            <input type="text" id="search-input" class="form-control mb-1 mb-md-0 flex-grow-1" style="border-radius:20px; max-width: 150px; height: 31px; font-size: 0.75rem;" placeholder="Search...">
+            <input type="text" id="search-input" oninput="handleSearch()" class="form-control mb-1 mb-md-0 flex-grow-1" style="border-radius:20px; max-width: 150px; height: 31px; font-size: 0.75rem;" placeholder="Search...">
             <button onclick="openNewOrderModal()" class="btn btn-warning btn-sm fw-bold shadow-sm mb-1 mb-md-0">➕ Order</button>
             <button onclick="openCompleteShipmentsModal()" class="btn btn-info btn-sm fw-bold shadow-sm mb-1 mb-md-0">✅ Done</button>
             <button onclick="exportToExcel()" class="btn btn-success btn-sm fw-bold shadow-sm mb-1 mb-md-0">📊 Export</button>
@@ -227,11 +214,10 @@
   </div>
 </div>
 
-<!-- Motion ribbon (dynamic ticker showing active deliveries, cusdec, vehicle, destination) -->
+<!-- Motion ribbon -->
 <div class="container-fluid">
     <div class="motion-ribbon">
         <div id="ribbon-track" class="ribbon-track" aria-hidden="true">
-            <!-- Items are injected by app.js -->
             <div class="ribbon-item">Loading deliveries...</div>
         </div>
     </div>
@@ -389,7 +375,8 @@
                                 <div class="col-md-12 text-end mt-2"><button id="update-btn" onclick="submitUpdate()" class="btn btn-primary btn-sm fw-bold px-4 w-100" style="background:#1a3a52; border: none;">✅ Update</button></div>
                             </div>
                         </div>
-                                <!-- NEW: Order Products Table Section -->
+                        
+                        <!-- Order Products Table Section -->
                         <div class="mt-3 border-top pt-3">
                             <h6 class="fw-bold text-secondary mb-2">📦 Products List</h6>
                             <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
@@ -418,11 +405,7 @@
 
 <footer> TAM Operation 2026 | Advantis Freezone Mercury | All Right Reserved </footer>
 
-<!-- Add Bootstrap JS bundle (includes Popper) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Load the main application file -->
 <script src="app.js"></script>
-
 </body>
 </html>
